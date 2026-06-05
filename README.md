@@ -1,33 +1,18 @@
-# Snake-Multiplayer
+# Multiplayer Snake Game 🐍
 
-A [libGDX](https://libgdx.com/) project generated with [gdx-liftoff](https://github.com/libgdx/gdx-liftoff).
+[cite_start]Repositório destinado ao projeto da disciplina de Programação Orientada a Objetos (SCC0204) do Instituto de Ciências Matemáticas e de Computação (ICMC) da USP.
 
-This project was generated with a template including simple application launchers and an `ApplicationAdapter` extension that draws libGDX logo.
+## 👥 Equipe do Projeto
+* **Daniel Alves de Morais** - Número USP: 16860858
+* **Davi Nascimento Pereira** - Número USP: 16906368
+* **Gustavo Silva Lima** - Número USP: 16907230
 
-## Platforms
+## 🎮 Sobre o Jogo
+Uma versão para dois jogadores do clássico jogo da cobrinha. Ambos os jogadores compartilham a mesma tela e competem para comer a maior quantidade de comida sem colidir. O jogo roda em tempo real e utiliza o framework LibGDX para gráficos e captura de comandos.
 
-- `core`: Main module with the application logic shared by all platforms.
-- `lwjgl3`: Primary desktop platform using LWJGL3; was called 'desktop' in older docs.
+## 💻 Tecnologias Utilizadas
+* **Linguagem:** Java
+* **Framework:** LibGDX (Desktop target) 
 
-## Gradle
-
-This project uses [Gradle](https://gradle.org/) to manage dependencies.
-The Gradle wrapper was included, so you can run Gradle tasks using `gradlew.bat` or `./gradlew` commands.
-Useful Gradle tasks and flags:
-
-- `--continue`: when using this flag, errors will not stop the tasks from running.
-- `--daemon`: thanks to this flag, Gradle daemon will be used to run chosen tasks.
-- `--offline`: when using this flag, cached dependency archives will be used.
-- `--refresh-dependencies`: this flag forces validation of all dependencies. Useful for snapshot versions.
-- `build`: builds sources and archives of every project.
-- `cleanEclipse`: removes Eclipse project data.
-- `cleanIdea`: removes IntelliJ project data.
-- `clean`: removes `build` folders, which store compiled classes and built archives.
-- `eclipse`: generates Eclipse project data.
-- `idea`: generates IntelliJ project data.
-- `lwjgl3:jar`: builds application's runnable jar, which can be found at `lwjgl3/build/libs`.
-- `lwjgl3:run`: starts the application.
-- `test`: runs unit tests (if any).
-
-Note that most tasks that are not specific to a single project can be run with `name:` prefix, where the `name` should be replaced with the ID of a specific project.
-For example, `core:clean` removes `build` folder only from the `core` project.
+## 🚀 Como Compilar e Executar
+*Lorem*.
