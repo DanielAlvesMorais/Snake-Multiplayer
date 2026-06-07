@@ -8,10 +8,12 @@ import com.badlogic.gdx.InputAdapter;
 // InputAdapter implementa a interface InputProcessor
 public class TecladoController extends InputAdapter {
     // Variavel pra guardar a cobra
-    private Snake snake;
-    
-    public TecladoController(Snake snake) {
-        this.snake = snake;
+    private Snake snake1;
+    private Snake snake2;
+
+    public TecladoController(Snake snake1, Snake snake2) {
+        this.snake1 = snake1;
+        this.snake2 = snake2;
     }
 
     // método que indentifica qual tecla foi pressionada e muda a direção da cobra de acordo
@@ -20,16 +22,28 @@ public class TecladoController extends InputAdapter {
     public boolean keyDown(int keycode) {
         switch (keycode) {
             case Input.Keys.UP:
-                snake.setDirection(Direction.UP);
+                snake1.setDirection(Direction.UP);
                 return true;
             case Input.Keys.DOWN:
-                snake.setDirection(Direction.DOWN);
+                snake1.setDirection(Direction.DOWN);
                 return true;
             case Input.Keys.LEFT:
-                snake.setDirection(Direction.LEFT);
+                snake1.setDirection(Direction.LEFT);
                 return true;
             case Input.Keys.RIGHT:
-                snake.setDirection(Direction.RIGHT);
+                snake1.setDirection(Direction.RIGHT);
+                return true;
+            case Input.Keys.W:
+                snake2.setDirection(Direction.UP);
+                return true;
+            case Input.Keys.S:
+                snake2.setDirection(Direction.DOWN);    
+                return true;
+            case Input.Keys.A:
+                snake2.setDirection(Direction.LEFT);
+                return true;
+            case Input.Keys.D:
+                snake2.setDirection(Direction.RIGHT);       
                 return true;
         }
         return false;

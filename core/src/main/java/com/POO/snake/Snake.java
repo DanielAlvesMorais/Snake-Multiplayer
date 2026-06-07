@@ -18,11 +18,11 @@ public class Snake{
     // Verifica se a cobra comeu a maçã
     private boolean hasEatenApple = false;
     
-    public Snake() {
-        // cria o a cabeça da cobra no centro da tela (320, 240) e define a direção inicial como UP
-        body.addFirst(new SnakeBody(320, 240));
-        body.add(new SnakeBody(320, 220));
-        body.add(new SnakeBody(320, 200));
+    public Snake(int x, int y) {
+        // cria a cobra no lugar que for definido e define a direção inicial como UP
+        body.addFirst(new SnakeBody(x, y));
+        body.add(new SnakeBody(x, y - 20));
+        body.add(new SnakeBody(x, y - 40));
         this.direction = Direction.UP;
     }
 
@@ -101,11 +101,17 @@ public class Snake{
         return this.hasEatenApple;
     }
     // Boolean que seta se a cobra colidiu consigo mesma
-    public boolean checkCollision() {
+    public boolean checkCollision(Snake otherSnake) {
         SnakeBody head = body.peekFirst();
         // verifica se a cobra colidiu nela mesma
         for(SnakeBody part : body) {
             if(part != head && part.getX() == head.getX() && part.getY() == head.getY()) {
+                return true;
+            }
+        }
+        // verifica se a cobra colidiu com a outra cobra
+        for(SnakeBody part : otherSnake.getBody()) {
+            if(part.getX() == head.getX() && part.getY() == head.getY()) {
                 return true;
             }
         }
