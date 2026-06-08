@@ -16,4 +16,6 @@ Uma versão para dois jogadores do clássico jogo da cobrinha. Ambos os jogadore
 
 ## 🚀 Como Compilar e Executar
 Comando pra compilar limpar as pré builds e executar  o jogo.
-./gradlew clean lwjgl3:run
+./gradlew clean lwjgl3:run (Linux)
+gradlew.bat lwjgl3:run (Windows)
+

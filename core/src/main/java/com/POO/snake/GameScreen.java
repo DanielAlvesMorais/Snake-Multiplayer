@@ -74,7 +74,7 @@ public class GameScreen implements Screen {
 
         // controla o tempo entre cada movimento da cobra
         moveTimer += delta;
-        if(moveTimer > 0.2f){
+        if(moveTimer > 0.15f){
             snake1.move();
             snake2.move();
             moveTimer = 0;
