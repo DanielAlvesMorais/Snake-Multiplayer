@@ -15,4 +15,7 @@ Uma versão para dois jogadores do clássico jogo da cobrinha. Ambos os jogadore
 * **Framework:** LibGDX (Desktop target) 
 
 ## 🚀 Como Compilar e Executar
-*Lorem*.
+Comando pra compilar limpar as pré builds e executar  o jogo.
+./gradlew clean lwjgl3:run (Linux)
+gradlew.bat lwjgl3:run (Windows)
+
