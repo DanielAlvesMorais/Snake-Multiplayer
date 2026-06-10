@@ -62,7 +62,7 @@ public class GameScreen implements Screen {
         Pixmap applePixmap = new Pixmap(20,20,Pixmap.Format.RGBA8888);
         applePixmap.setColor(Color.RED);
         applePixmap.fill();
-        this.appleTexture = new Texture("New Piskel (2).png");
+        this.appleTexture = new Texture("Apple.png");
         applePixmap.dispose();
     }
 
