@@ -12,7 +12,7 @@ public class SnakeGame extends Game {
     public void create() {
         batch = new SpriteBatch();
 
-        this.setScreen(new GameScreen(this));
+        this.setScreen(new Menu(this));
     }
 
     public SpriteBatch getBatch() {
