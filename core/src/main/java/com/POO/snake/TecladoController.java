@@ -12,12 +12,12 @@ public class TecladoController extends InputAdapter {
     private Snake snake1;
     private Snake snake2;
     private Menu menu;
-    private GameOver gameOverScreen;
-    private Pause pauseScreen;
 
     public TecladoController(Snake snake1, Snake snake2) {
         this.snake1 = snake1;
         this.snake2 = snake2;
+    }
+    public TecladoController(){
     }
 
     public TecladoController(Menu menu) {
@@ -63,33 +63,8 @@ public class TecladoController extends InputAdapter {
                 snake2.setDirection(Direction.RIGHT);
                 return true;
             case Input.Keys.ENTER:
-                if (menu != null) {
-                    menu.enterGame();
-                }
-                if (gameOverScreen != null) {
-                    gameOverScreen.restartGame();
-                }
-                if (pauseScreen != null) {
-                    pauseScreen.resumeGame(); // Adicione esta linha
-
-                }
+                menu.enterGame();
                 return true;
-
-            case Input.Keys.ESCAPE:
-                if(menu != null || gameOverScreen != null || pauseScreen != null) {
-                    Gdx.app.exit(); // Fecha o jogo
-                }
-                return true;
-
-            case Input.Keys.P:
-                // Se o controlador estiver na tela de jogo (onde as cobras existem e não são
-                // nulas)
-                if (snake1 != null && snake2 != null) {
-
-                }
-                return true;
-            default:
-                return false;
         }
     }
 }
