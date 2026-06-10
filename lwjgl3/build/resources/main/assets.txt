@@ -1,2 +1,10 @@
-Apple.png
+apple.png
 libgdx.png
+snake1_body.png
+snake1_corner.png
+snake1_head.png
+snake1_tail.png
+snake2_body.png
+snake2_corner.png
+snake2_head.png
+snake2_tail.png

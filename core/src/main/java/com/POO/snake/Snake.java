@@ -122,6 +122,10 @@ public class Snake{
     public Deque<SnakeBody> getBody() {
         return this.body;
     }
+
+    public Direction getDirection() {
+    return this.direction;
+    }
 }
 
 enum Direction {
