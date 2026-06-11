@@ -2,167 +2,443 @@ package com.POO.snake;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 public class GameScreen implements Screen {
 
-    // Objeto que instacia o da classe principal para rodar o jogo
+    // Referência ao jogo principal
     final SnakeGame game;
-    // Objeto para instaciar a cobra
+
+    // Entidades do jogo
     private Snake snake1;
-    // Objeto para instaciar a segunda cobra
     private Snake snake2;
-    // textura inicial pra desenhar a cobra verde
-    private Texture snake1Texture;
-    // textura inicial pra desenhar a cobra azul
-    private Texture snake2Texture;
-    // Variavel pra calcular o tempo entre cada movimento da cobra
-    private float moveTimer = 0;
-    // Variavel pra intanciar o controlador do teclado
-    private TecladoController controller;
-    // Variavel pra instanciar a maçã
     private Apple apple;
-    // Textura inicial da maçã
+    private TecladoController controller;
+
+    // Controle de tempo do movimento
+    private float moveTimer = 0;
+
+    // Texturas da cobra 1
+    private Texture snake1HeadTexture;
+    private Texture snake1BodyTexture;
+    private Texture snake1TailTexture;
+    private Texture snake1CornerTexture;
+
+    // Texturas da cobra 2
+    private Texture snake2HeadTexture;
+    private Texture snake2BodyTexture;
+    private Texture snake2TailTexture;
+    private Texture snake2CornerTexture;
+
+    // Textura da maçã
     private Texture appleTexture;
 
+    // Fundo opcional
+    private Texture backgroundTexture;
 
-    // O construtor recebe o jogo principal para termos acesso ao getBatch() (o nosso pincel)
+    // Posições antigas das caudas para a interpolação fluida
+    private float oldTail1X, oldTail1Y;
+    private float oldTail2X, oldTail2Y;
+
+    private float moveInterval = 0.15f;
+    private static final float MIN_INTERVAL = 0.05f;
+    private static final float SPEED_INCREASE = 0.005f;
+
     public GameScreen(final SnakeGame game) {
-        // instancia o jogo principal, cobra, o controlador do teclado e a maçã
         this.game = game;
-        this.snake1 = new Snake(280, 240);
-        this.snake2 = new Snake(360, 240);
-        this.controller = new TecladoController(this.snake1, this.snake2);
-        this.apple = new Apple();
-        //garante que a maçã não nasça em cima da cobra
+
+        snake1 = new Snake(280, 240);
+        snake2 = new Snake(360, 240);
+        moveInterval = 0.15f;
+
+        controller = new TecladoController(snake1, snake2);
+
+        apple = new Apple();
         reposicionarMaca();
 
-        //transforma o controlador de teclado em um Processo Orientado a Eventos
-        Gdx.input.setInputProcessor(this.controller);
+        Gdx.input.setInputProcessor(controller);
 
-        // Pixmap pra guardar a texture da cobra no vram
-        Pixmap snakePixmap = new Pixmap(20,20,Pixmap.Format.RGBA8888);
-        snakePixmap.setColor(Color.BLUE);
-        snakePixmap.fill();
-        // GPU so recebe texture
-        this.snake1Texture = new Texture(snakePixmap);
-        snakePixmap.dispose();
+        // Carrega as texturas
 
-        Pixmap snake2Pixmap = new Pixmap(20,20,Pixmap.Format.RGBA8888);
-        snake2Pixmap.setColor(Color.RED);
-        snake2Pixmap.fill();
-        // GPU so recebe texture
-        this.snake2Texture = new Texture(snake2Pixmap);
-        snake2Pixmap.dispose();
+        appleTexture = new Texture("apple.png");
 
-        // Pixmap pra guardar a texture da maçã no vram
-        Pixmap applePixmap = new Pixmap(20,20,Pixmap.Format.RGBA8888);
-        applePixmap.setColor(Color.RED);
-        applePixmap.fill();
-        this.appleTexture = new Texture("New Piskel (2).png");
-        applePixmap.dispose();
+        snake1HeadTexture = new Texture("snake1_head.png");
+        snake1BodyTexture = new Texture("snake1_body.png");
+        snake1TailTexture = new Texture("snake1_tail.png");
+        snake1CornerTexture = new Texture("snake1_corner.png");
+
+        snake2HeadTexture = new Texture("New Piskel (18).png");
+        snake2BodyTexture = new Texture("New Piskel (14).png");
+        snake2TailTexture = new Texture("New Piskel (15).png");
+        snake2CornerTexture = new Texture("New Piskel (19).png");
+
+        // Inicializa as caudas antigas com a posição inicial delas
+        oldTail1X = snake1.getBody().peekLast().getX();
+        oldTail1Y = snake1.getBody().peekLast().getY();
+        oldTail2X = snake2.getBody().peekLast().getX();
+        oldTail2Y = snake2.getBody().peekLast().getY();
+
+        // Opcional
+        //backgroundTexture = new Texture("background.png");
     }
 
-    // Método render é chamado a cada frame, é responsável por desenhar as telas
     @Override
     public void render(float delta) {
-        // Pinta o fundo da tela com um verde escuro (simulando a cor de fundo do grid)
-        ScreenUtils.clear(0.0f, 0.5f, 0.0f, 0.0f);
 
-        // controla o tempo entre cada movimento da cobra
+        ScreenUtils.clear(0.0f, 0.5f, 0.0f, 1.0f);
+
         moveTimer += delta;
-        if(moveTimer > 0.15f){
+
+        // Guarda a cauda antiga ANTES do movimento acontecer
+        if (moveTimer > moveInterval) {
+
+            // Guarda a posição atual da cauda da cobra 1
+            SnakeBody tail1 = snake1.getBody().peekLast();
+            oldTail1X = tail1.getX();
+            oldTail1Y = tail1.getY();
+
+            // Guarda a posição atual da cauda da cobra 2
+            SnakeBody tail2 = snake2.getBody().peekLast();
+            oldTail2X = tail2.getX();
+            oldTail2Y = tail2.getY();
+
+            // Só depois move
             snake1.move();
             snake2.move();
+
             moveTimer = 0;
         }
-        // verifica se a cobra comeu a maçã e spawna uma nova
+
+        // Calcula o progresso do movimento (garantindo o limite máximo de 1.0f)
+        float alpha = Math.min(moveTimer / moveInterval, 1.0f);
+
+        // Verifica maçã para cobra 1
         SnakeBody head1 = snake1.getBody().peekFirst();
-        if(apple.getX() == head1.getX() && apple.getY() == head1.getY()){
+
+        if (apple.getX() == head1.getX()
+                && apple.getY() == head1.getY()) {
+
             snake1.eatApple();
+
+            moveInterval = Math.max(
+                    MIN_INTERVAL,
+                    moveInterval - SPEED_INCREASE
+            );
+
             reposicionarMaca();
-        }
-        SnakeBody head2 = snake2.getBody().peekFirst();
-        if(apple.getX() == head2.getX() && apple.getY() == head2.getY()){
-            snake2.eatApple();
-            reposicionarMaca();
-        }
-        // Se a cobra colidir consigo mesma, reinicia o jogo
-        if (snake1.checkCollision(snake2) || snake2.checkCollision(snake1)) {
-            // instancia uma nova cobra, um novo controlador e reposiciona a maçã
-            this.snake1 = new Snake(280, 240);
-            this.snake2 = new Snake(360, 240);
-            this.controller = new TecladoController(this.snake1, this.snake2);
-            Gdx.input.setInputProcessor(this.controller);
-            reposicionarMaca();
-        }
-        // Prepara o pincel para desenhar a cobra no futuro
-        game.getBatch().begin();
-        // Desenha a maçã nas coordenadas aleatorias
-        game.getBatch().draw(appleTexture, apple.getX(), apple.getY(), 20, 20);
-        // for que percorre a fila dupla e a cada body desenha um quadrado verde claro
-        for (SnakeBody body : snake1.getBody()) {
-            // Aqui desenharemos cada parte do corpo da cobra usando o game.getBatch() e as coordenadas de body.getX() e body.getY()
-            game.getBatch().draw(snake1Texture, body.getX(), body.getY(), 20, 20);
-        }
-        for (SnakeBody body : snake2.getBody()) {
-            // Aqui desenharemos cada parte do corpo da cobra usando o game.getBatch() e as coordenadas de body.getX() e body.getY()
-            game.getBatch().draw(snake2Texture, body.getX(), body.getY(), 20, 20);
         }
 
-        // Finaliza o desenho da cobra
+        // Verifica maçã para cobra 2
+        SnakeBody head2 = snake2.getBody().peekFirst();
+
+        if (apple.getX() == head2.getX()
+                && apple.getY() == head2.getY()) {
+
+            snake2.eatApple();
+            moveInterval = Math.max(
+                    MIN_INTERVAL,
+                    moveInterval - SPEED_INCREASE
+            );
+            reposicionarMaca();
+        }
+
+        // Colisões
+        if (snake1.checkCollision(snake2)
+                || snake2.checkCollision(snake1)) {
+
+            snake1 = new Snake(280, 240);
+            snake2 = new Snake(360, 240);
+
+            controller = new TecladoController(snake1, snake2);
+
+            Gdx.input.setInputProcessor(controller);
+
+            reposicionarMaca();
+        }
+
+        game.getBatch().begin();
+
+        // Fundo opcional
+        if (backgroundTexture != null) {
+            game.getBatch().draw(
+                    backgroundTexture,
+                    0,
+                    0,
+                    Gdx.graphics.getWidth(),
+                    Gdx.graphics.getHeight()
+            );
+        }
+
+        // Maçã
+        game.getBatch().draw(
+                appleTexture,
+                apple.getX(),
+                apple.getY(),
+                20,
+                20
+        );
+
+        // Cobra 1
+        desenharCobra(
+                snake1,
+                snake1HeadTexture,
+                snake1BodyTexture,
+                snake1TailTexture,
+                snake1CornerTexture,
+                alpha,
+                oldTail1X,
+                oldTail1Y
+        );
+
+        // Cobra 2
+        desenharCobra(
+                snake2,
+                snake2HeadTexture,
+                snake2BodyTexture,
+                snake2TailTexture,
+                snake2CornerTexture,
+                alpha,
+                oldTail2X,
+                oldTail2Y
+        );
+
+        // Colisões
+        if (snake1.checkCollision(snake2) || snake2.checkCollision(snake1)) {
+            snake1 = new Snake(280, 240);
+            snake2 = new Snake(360, 240);
+            controller = new TecladoController(snake1, snake2);
+            Gdx.input.setInputProcessor(controller);
+            reposicionarMaca();
+
+            // REINICIA AS CAUDAS AQUI TAMBÉM
+            oldTail1X = snake1.getBody().peekLast().getX();
+            oldTail1Y = snake1.getBody().peekLast().getY();
+            oldTail2X = snake2.getBody().peekLast().getX();
+            oldTail2Y = snake2.getBody().peekLast().getY();
+        }
+
         game.getBatch().end();
     }
-    // Método que garante que a maçã só nasce em um lugar vazio
-    private void reposicionarMaca() {
-        boolean posicaoValida = false;
-        
-        // Continua a tentar enquanto a posição não for válida
-        while (!posicaoValida) {
-            apple = new Apple(); // A maçã escolhe um X e Y aleatórios
-            posicaoValida = true; // Assumimos que a posição é boa, até provar o contrário...
-            
-            // ...e agora testamos contra TODOS os blocos do corpo da cobra
-            for (SnakeBody pedaco : snake1.getBody()) {
-                if (apple.getX() == pedaco.getX() && apple.getY() == pedaco.getY()) {
-                    // Se o X e Y da maçã baterem com qualquer pedaço da cobra, é inválido!
-                    posicaoValida = false; 
-                    break; // Para o 'for' na mesma hora e faz o 'while' rodar de novo
+
+    /**
+     * Desenha uma cobra usando cabeça, corpo e cauda.
+     */
+    /**
+     * Desenha uma cobra usando cabeça, corpo e cauda com movimento fluido.
+     */
+    private void desenharCobra(
+        Snake snake,
+        Texture headTexture,
+        Texture bodyTexture,
+        Texture tailTexture,
+        Texture cornerTexture,
+        float alpha,
+        float oldTailX,
+        float oldTailY) {
+
+    SnakeBody[] partes = snake.getBody().toArray(new SnakeBody[0]);
+    int tamanho = partes.length;
+
+    for (int i = 0; i < tamanho; i++) {
+
+        SnakeBody atual = partes[i];
+
+        Texture textura;
+        float angulo = 0;
+
+        float renderX = atual.getX();
+        float renderY = atual.getY();
+
+        // CABEÇA
+        if (i == 0) {
+
+            textura = headTexture;
+
+            switch (snake.getDirection()) {
+                case UP:
+                    angulo = 270;
+                    break;
+                case DOWN:
+                    angulo = 90;
+                    break;
+                case LEFT:
+                    angulo = 0;
+                    break;
+                case RIGHT:
+                    angulo = 180;
+                    break;
+            }
+        }
+
+        // CAUDA
+        else if (i == tamanho - 1) {
+
+            textura = tailTexture;
+
+            SnakeBody frente = partes[i - 1];
+
+            int dx = frente.getX() - atual.getX();
+            int dy = frente.getY() - atual.getY();
+
+            if (dx > 0) {
+                angulo = 180;
+            }
+            else if (dx < 0) {
+                angulo = 0;
+            }
+            else if (dy > 0) {
+                angulo = 270;
+            }
+            else {
+                angulo = 90;
+            }
+        }
+
+        // CORPO
+        else {
+
+            SnakeBody anterior = partes[i - 1];
+            SnakeBody proximo = partes[i + 1];
+
+            int dx1 = anterior.getX() - atual.getX();
+            int dy1 = anterior.getY() - atual.getY();
+
+            int dx2 = proximo.getX() - atual.getX();
+            int dy2 = proximo.getY() - atual.getY();
+
+            if (dy1 == 0 && dy2 == 0) {
+
+                textura = bodyTexture;
+                angulo = 0;
+            }
+            else if (dx1 == 0 && dx2 == 0) {
+
+                textura = bodyTexture;
+                angulo = 90;
+            }
+            else {
+
+                textura = cornerTexture;
+
+                if ((dy1 < 0 && dx2 > 0) ||
+                    (dx1 > 0 && dy2 < 0)) {
+
+                    angulo = 90;
+                }
+                else if ((dx1 < 0 && dy2 < 0) ||
+                         (dy1 < 0 && dx2 < 0)) {
+
+                    angulo = 0;
+                }
+                else if ((dy1 > 0 && dx2 < 0) ||
+                         (dx1 < 0 && dy2 > 0)) {
+
+                    angulo = 270;
+                }
+                else {
+
+                    angulo = 180;
                 }
             }
+        }
+
+        game.getBatch().draw(
+                textura,
+                renderX,
+                renderY,
+                10,
+                10,
+                20,
+                20,
+                1f,
+                1f,
+                angulo,
+                0,
+                0,
+                textura.getWidth(),
+                textura.getHeight(),
+                false,
+                false
+        );
+    }
+}
+
+    /**
+     * Garante que a maçã não apareça sobre nenhuma cobra.
+     */
+    private void reposicionarMaca() {
+
+        boolean posicaoValida = false;
+
+        while (!posicaoValida) {
+
+            apple = new Apple();
+            posicaoValida = true;
+
+            for (SnakeBody pedaco : snake1.getBody()) {
+
+                if (apple.getX() == pedaco.getX()
+                        && apple.getY() == pedaco.getY()) {
+
+                    posicaoValida = false;
+                    break;
+                }
+            }
+
+            if (!posicaoValida) {
+                continue;
+            }
+
             for (SnakeBody pedaco : snake2.getBody()) {
-                if (apple.getX() == pedaco.getX() && apple.getY() == pedaco.getY()) {
-                    // Se o X e Y da maçã baterem com qualquer pedaço da cobra, é inválido!
-                    posicaoValida = false; 
-                    break; // Para o 'for' na mesma hora e faz o 'while' rodar de novo
+
+                if (apple.getX() == pedaco.getX()
+                        && apple.getY() == pedaco.getY()) {
+
+                    posicaoValida = false;
+                    break;
                 }
             }
         }
     }
 
-    // Métodos obrigatórios da interface Screen (mesmo que fiquem vazios por enquanto)
     @Override
-    public void show() { }
+    public void show() {
+    }
 
     @Override
-    public void resize(int width, int height) { }
+    public void resize(int width, int height) {
+    }
 
     @Override
-    public void pause() { }
+    public void pause() {
+    }
 
     @Override
-    public void resume() { }
+    public void resume() {
+    }
 
     @Override
-    public void hide() { }
+    public void hide() {
+    }
 
     @Override
-    public void dispose() { 
-        snake1Texture.dispose();
-        snake2Texture.dispose();
+    public void dispose() {
+
+        snake1HeadTexture.dispose();
+        snake1BodyTexture.dispose();
+        snake1TailTexture.dispose();
+        snake1CornerTexture.dispose();
+
+        snake2HeadTexture.dispose();
+        snake2BodyTexture.dispose();
+        snake2TailTexture.dispose();
+        snake2CornerTexture.dispose();
+
         appleTexture.dispose();
+
+        if (backgroundTexture != null) {
+            backgroundTexture.dispose();
+        }
     }
 }
