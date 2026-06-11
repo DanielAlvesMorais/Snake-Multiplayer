@@ -41,11 +41,16 @@ public class GameScreen implements Screen {
     private float oldTail1X, oldTail1Y;
     private float oldTail2X, oldTail2Y;
 
+    private float moveInterval = 0.15f;
+    private static final float MIN_INTERVAL = 0.05f;
+    private static final float SPEED_INCREASE = 0.005f;
+
     public GameScreen(final SnakeGame game) {
         this.game = game;
 
         snake1 = new Snake(280, 240);
         snake2 = new Snake(360, 240);
+        moveInterval = 0.15f;
 
         controller = new TecladoController(snake1, snake2);
 
@@ -63,10 +68,10 @@ public class GameScreen implements Screen {
         snake1TailTexture = new Texture("snake1_tail.png");
         snake1CornerTexture = new Texture("snake1_corner.png");
 
-        snake2HeadTexture = new Texture("snake2_head.png");
-        snake2BodyTexture = new Texture("snake2_body.png");
-        snake2TailTexture = new Texture("snake2_tail.png");
-        snake2CornerTexture = new Texture("snake2_corner.png");
+        snake2HeadTexture = new Texture("New Piskel (18).png");
+        snake2BodyTexture = new Texture("New Piskel (14).png");
+        snake2TailTexture = new Texture("New Piskel (15).png");
+        snake2CornerTexture = new Texture("New Piskel (19).png");
 
         // Inicializa as caudas antigas com a posição inicial delas
         oldTail1X = snake1.getBody().peekLast().getX();
@@ -86,7 +91,7 @@ public class GameScreen implements Screen {
         moveTimer += delta;
 
         // Guarda a cauda antiga ANTES do movimento acontecer
-        if (moveTimer > 0.4f) {
+        if (moveTimer > moveInterval) {
 
             // Guarda a posição atual da cauda da cobra 1
             SnakeBody tail1 = snake1.getBody().peekLast();
@@ -106,7 +111,7 @@ public class GameScreen implements Screen {
         }
 
         // Calcula o progresso do movimento (garantindo o limite máximo de 1.0f)
-        float alpha = Math.min(moveTimer / 0.4f, 1.0f);
+        float alpha = Math.min(moveTimer / moveInterval, 1.0f);
 
         // Verifica maçã para cobra 1
         SnakeBody head1 = snake1.getBody().peekFirst();
@@ -115,6 +120,12 @@ public class GameScreen implements Screen {
                 && apple.getY() == head1.getY()) {
 
             snake1.eatApple();
+
+            moveInterval = Math.max(
+                    MIN_INTERVAL,
+                    moveInterval - SPEED_INCREASE
+            );
+
             reposicionarMaca();
         }
 
@@ -125,6 +136,10 @@ public class GameScreen implements Screen {
                 && apple.getY() == head2.getY()) {
 
             snake2.eatApple();
+            moveInterval = Math.max(
+                    MIN_INTERVAL,
+                    moveInterval - SPEED_INCREASE
+            );
             reposicionarMaca();
         }
 
@@ -213,127 +228,141 @@ public class GameScreen implements Screen {
      * Desenha uma cobra usando cabeça, corpo e cauda com movimento fluido.
      */
     private void desenharCobra(
-            Snake snake,
-            Texture headTexture,
-            Texture bodyTexture,
-            Texture tailTexture,
-            Texture cornerTexture,
-            float alpha,
-            float oldTailX,
-            float oldTailY) {
+        Snake snake,
+        Texture headTexture,
+        Texture bodyTexture,
+        Texture tailTexture,
+        Texture cornerTexture,
+        float alpha,
+        float oldTailX,
+        float oldTailY) {
 
-        SnakeBody[] partes = snake.getBody().toArray(new SnakeBody[0]);
-        int tamanho = partes.length;
+    SnakeBody[] partes = snake.getBody().toArray(new SnakeBody[0]);
+    int tamanho = partes.length;
 
-        for (int i = 0; i < tamanho; i++) {
-            SnakeBody atual = partes[i];
+    for (int i = 0; i < tamanho; i++) {
 
-            Texture textura;
-            float angulo = 0;
+        SnakeBody atual = partes[i];
 
-            // --- CÁLCULO DA POSIÇÃO FLUIDA (INTERPOLAÇÃO) ---
-            float oldX, oldY;
+        Texture textura;
+        float angulo = 0;
 
-            if (i < tamanho - 1) {
-                // Para a cabeça e corpo, a posição antiga era a do bloco logo atrás na lista
-                oldX = partes[i + 1].getX();
-                oldY = partes[i + 1].getY();
-            } else {
-                // Para a cauda, usamos a posição que guardámos antes do movimento acontecer
-                oldX = oldTailX;
-                oldY = oldTailY;
-            }
+        float renderX = atual.getX();
+        float renderY = atual.getY();
 
-            // Descobre a posição visual exata neste frame baseada no alpha
-            float deltaX = atual.getX() - oldX;
-            float deltaY = atual.getY() - oldY;
+        // CABEÇA
+        if (i == 0) {
 
-            if (Math.abs(deltaX) > 20) {
-                deltaX = -Math.signum(deltaX) * 20;
-            }
+            textura = headTexture;
 
-            if (Math.abs(deltaY) > 20) {
-                deltaY = -Math.signum(deltaY) * 20;
-            }
-
-            float renderX = oldX + deltaX * alpha;
-            float renderY = oldY + deltaY * alpha;
-            // ------------------------------------------------
-
-            // [A TUA LÓGICA DE DEFINIR TEXTURA E ÂNGULO FICA EXATAMENTE IGUAL]
-            // CABEÇA
-            if (i == 0) {
-                textura = headTexture;
-                switch (snake.getDirection()) {
-                    case UP:    angulo = 270; break;
-                    case DOWN:  angulo = 90;  break;
-                    case LEFT:  angulo = 0;   break;
-                    case RIGHT: angulo = 180; break;
-                }
-            }
-            // CAUDA
-            else if (i == tamanho - 1) {
-                textura = tailTexture;
-                SnakeBody frente = partes[i - 1];
-                int dx = frente.getX() - atual.getX();
-                int dy = frente.getY() - atual.getY();
-
-                if (dx > 0)       angulo = 180;
-                else if (dx < 0)  angulo = 0;
-                else if (dy > 0)  angulo = 270;
-                else              angulo = 90;
-            }
-            // CORPO
-            else {
-                SnakeBody anterior = partes[i - 1];
-                SnakeBody proximo = partes[i + 1];
-
-                int dx1 = anterior.getX() - atual.getX();
-                int dy1 = anterior.getY() - atual.getY();
-                int dx2 = proximo.getX() - atual.getX();
-                int dy2 = proximo.getY() - atual.getY();
-
-                if (dy1 == 0 && dy2 == 0) {
-                    textura = bodyTexture;
-                    angulo = 0;
-                } else if (dx1 == 0 && dx2 == 0) {
-                    textura = bodyTexture;
+            switch (snake.getDirection()) {
+                case UP:
+                    angulo = 270;
+                    break;
+                case DOWN:
                     angulo = 90;
-                } else {
-                    textura = cornerTexture;
-                    if ((dy1 < 0 && dx2 > 0) || (dx1 > 0 && dy2 < 0)) {
-                        angulo = 90;
-                    } else if ((dx1 < 0 && dy2 < 0) || (dy1 < 0 && dx2 < 0)) {
-                        angulo = 0;
-                    } else if ((dy1 > 0 && dx2 < 0) || (dx1 < 0 && dy2 > 0)) {
-                        angulo = 270;
-                    } else {
-                        angulo = 180;
-                    }
+                    break;
+                case LEFT:
+                    angulo = 0;
+                    break;
+                case RIGHT:
+                    angulo = 180;
+                    break;
+            }
+        }
+
+        // CAUDA
+        else if (i == tamanho - 1) {
+
+            textura = tailTexture;
+
+            SnakeBody frente = partes[i - 1];
+
+            int dx = frente.getX() - atual.getX();
+            int dy = frente.getY() - atual.getY();
+
+            if (dx > 0) {
+                angulo = 180;
+            }
+            else if (dx < 0) {
+                angulo = 0;
+            }
+            else if (dy > 0) {
+                angulo = 270;
+            }
+            else {
+                angulo = 90;
+            }
+        }
+
+        // CORPO
+        else {
+
+            SnakeBody anterior = partes[i - 1];
+            SnakeBody proximo = partes[i + 1];
+
+            int dx1 = anterior.getX() - atual.getX();
+            int dy1 = anterior.getY() - atual.getY();
+
+            int dx2 = proximo.getX() - atual.getX();
+            int dy2 = proximo.getY() - atual.getY();
+
+            if (dy1 == 0 && dy2 == 0) {
+
+                textura = bodyTexture;
+                angulo = 0;
+            }
+            else if (dx1 == 0 && dx2 == 0) {
+
+                textura = bodyTexture;
+                angulo = 90;
+            }
+            else {
+
+                textura = cornerTexture;
+
+                if ((dy1 < 0 && dx2 > 0) ||
+                    (dx1 > 0 && dy2 < 0)) {
+
+                    angulo = 90;
+                }
+                else if ((dx1 < 0 && dy2 < 0) ||
+                         (dy1 < 0 && dx2 < 0)) {
+
+                    angulo = 0;
+                }
+                else if ((dy1 > 0 && dx2 < 0) ||
+                         (dx1 < 0 && dy2 > 0)) {
+
+                    angulo = 270;
+                }
+                else {
+
+                    angulo = 180;
                 }
             }
-
-            // DESENHA USANDO AS COORDENADAS FLUIDAS (renderX e renderY)
-            game.getBatch().draw(
-                    textura,
-                    renderX,        // <--- Alterado aqui
-                    renderY,        // <--- Alterado aqui
-                    10,
-                    10,
-                    20,
-                    20,
-                    1f,
-                    1f,
-                    angulo,
-                    0,
-                    0,
-                    textura.getWidth(),
-                    textura.getHeight(),
-                    false,
-                    false
-            );
         }
+
+        game.getBatch().draw(
+                textura,
+                renderX,
+                renderY,
+                10,
+                10,
+                20,
+                20,
+                1f,
+                1f,
+                angulo,
+                0,
+                0,
+                textura.getWidth(),
+                textura.getHeight(),
+                false,
+                false
+        );
     }
+}
 
     /**
      * Garante que a maçã não apareça sobre nenhuma cobra.
