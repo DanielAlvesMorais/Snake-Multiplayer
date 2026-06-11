@@ -45,6 +45,7 @@ public class Snake{
     }   
     // Método responsável pela movimentação
     public void move() {
+
         // Pega as coordenadas da cabeça atual
         SnakeBody head = body.peekFirst();
         int newX = head.getX();
@@ -84,7 +85,7 @@ public class Snake{
         }
 
         // Adiciona a nova cabeça e remove a cauda
-        SnakeBody newHead = new SnakeBody(newX, newY);
+        SnakeBody newHead = new SnakeBody(newX, newY, head.getX(), head.getY());
         body.addFirst(newHead);
         // logica pra quando a cobra comer a maçã
         if(this.hasEatenApple){
@@ -121,6 +122,10 @@ public class Snake{
     // Método que retorna a fila dupla do corpo da cobra
     public Deque<SnakeBody> getBody() {
         return this.body;
+    }
+
+    public Direction getDirection() {
+    return this.direction;
     }
 }
 
