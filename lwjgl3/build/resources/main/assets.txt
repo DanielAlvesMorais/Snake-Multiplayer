@@ -1,3 +1,4 @@
+Apple.png
 New Piskel (11).png
 New Piskel (12).png
 New Piskel (13).png
@@ -7,7 +8,8 @@ New Piskel (16).png
 New Piskel (17).png
 New Piskel (18).png
 New Piskel (19).png
-apple.png
+New Piskel (20).png
+New Piskel (21).png
 libgdx.png
 snake1_body.png
 snake1_corner.png

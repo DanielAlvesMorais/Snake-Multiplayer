@@ -34,10 +34,10 @@ public class GameScreen implements Screen {
     // Textura da maçã
     private Texture appleTexture;
 
-    // Fundo opcional
+    // Fundo (!Não adicionado!)
     private Texture backgroundTexture;
 
-    // Posições antigas das caudas para a interpolação fluida
+    // Posições antigas das caudas
     private float oldTail1X, oldTail1Y;
     private float oldTail2X, oldTail2Y;
 
@@ -61,12 +61,12 @@ public class GameScreen implements Screen {
 
         // Carrega as texturas
 
-        appleTexture = new Texture("apple.png");
+        appleTexture = new Texture("New Piskel (21).png");
 
-        snake1HeadTexture = new Texture("snake1_head.png");
-        snake1BodyTexture = new Texture("snake1_body.png");
-        snake1TailTexture = new Texture("snake1_tail.png");
-        snake1CornerTexture = new Texture("snake1_corner.png");
+        snake1HeadTexture = new Texture("snake2_head.png");
+        snake1BodyTexture = new Texture("snake2_body.png");
+        snake1TailTexture = new Texture("snake2_tail.png");
+        snake1CornerTexture = new Texture("snake2_corner.png");
 
         snake2HeadTexture = new Texture("New Piskel (18).png");
         snake2BodyTexture = new Texture("New Piskel (14).png");
@@ -79,8 +79,7 @@ public class GameScreen implements Screen {
         oldTail2X = snake2.getBody().peekLast().getX();
         oldTail2Y = snake2.getBody().peekLast().getY();
 
-        // Opcional
-        //backgroundTexture = new Texture("background.png");
+        backgroundTexture = new Texture("New Piskel (20).png");
     }
 
     @Override
@@ -88,6 +87,9 @@ public class GameScreen implements Screen {
 
         ScreenUtils.clear(0.0f, 0.5f, 0.0f, 1.0f);
 
+        if(Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.P)) {
+            game.setScreen(new Pause(game, this));
+        }
         moveTimer += delta;
 
         // Guarda a cauda antiga ANTES do movimento acontecer
@@ -147,19 +149,22 @@ public class GameScreen implements Screen {
         if (snake1.checkCollision(snake2)
                 || snake2.checkCollision(snake1)) {
 
-            snake1 = new Snake(280, 240);
+           /* snake1 = new Snake(280, 240);
             snake2 = new Snake(360, 240);
+            moveInterval = 0.15f;
 
             controller = new TecladoController(snake1, snake2);
 
             Gdx.input.setInputProcessor(controller);
 
-            reposicionarMaca();
+            
+            reposicionarMaca();*/
+             game.setScreen(new GameOver(game));
         }
 
         game.getBatch().begin();
 
-        // Fundo opcional
+        // Fundo 
         if (backgroundTexture != null) {
             game.getBatch().draw(
                     backgroundTexture,
@@ -205,8 +210,9 @@ public class GameScreen implements Screen {
 
         // Colisões
         if (snake1.checkCollision(snake2) || snake2.checkCollision(snake1)) {
-            snake1 = new Snake(280, 240);
+            /*snake1 = new Snake(280, 240);
             snake2 = new Snake(360, 240);
+            moveInterval = 0.15f;
             controller = new TecladoController(snake1, snake2);
             Gdx.input.setInputProcessor(controller);
             reposicionarMaca();
@@ -216,16 +222,15 @@ public class GameScreen implements Screen {
             oldTail1Y = snake1.getBody().peekLast().getY();
             oldTail2X = snake2.getBody().peekLast().getX();
             oldTail2Y = snake2.getBody().peekLast().getY();
-        }
+            */
+                game.setScreen(new GameOver(game));
+            }
 
         game.getBatch().end();
     }
 
     /**
      * Desenha uma cobra usando cabeça, corpo e cauda.
-     */
-    /**
-     * Desenha uma cobra usando cabeça, corpo e cauda com movimento fluido.
      */
     private void desenharCobra(
         Snake snake,
@@ -420,6 +425,10 @@ public class GameScreen implements Screen {
 
     @Override
     public void hide() {
+    }
+
+    public TecladoController getController() {
+        return this.controller;
     }
 
     @Override
