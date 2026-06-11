@@ -85,7 +85,7 @@ public class Snake{
         }
 
         // Adiciona a nova cabeça e remove a cauda
-        SnakeBody newHead = new SnakeBody(newX, newY, head.getX(), head.getY());
+        SnakeBody newHead = new SnakeBody(newX, newY);
         body.addFirst(newHead);
         // logica pra quando a cobra comer a maçã
         if(this.hasEatenApple){

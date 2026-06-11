@@ -10,10 +10,13 @@ public class TecladoController extends InputAdapter {
     // Variavel pra guardar a cobra
     private Snake snake1;
     private Snake snake2;
+    private Menu menu;
 
     public TecladoController(Snake snake1, Snake snake2) {
         this.snake1 = snake1;
         this.snake2 = snake2;
+    }
+    public TecladoController(){
     }
 
     // método que indentifica qual tecla foi pressionada e muda a direção da cobra de acordo
@@ -44,6 +47,9 @@ public class TecladoController extends InputAdapter {
                 return true;
             case Input.Keys.D:
                 snake2.setDirection(Direction.RIGHT);       
+                return true;
+            case Input.Keys.ENTER:
+                menu.enterGame();
                 return true;
         }
         return false;
