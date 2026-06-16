@@ -11,6 +11,7 @@ New Piskel (19).png
 New Piskel (20).png
 New Piskel (21).png
 libgdx.png
+ranking.json
 snake1_body.png
 snake1_corner.png
 snake1_head.png

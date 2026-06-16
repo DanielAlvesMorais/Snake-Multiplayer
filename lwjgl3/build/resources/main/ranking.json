@@ -1,0 +1,32 @@
+[
+{
+	class: com.POO.snake.JogadorScore
+	nome: Plaver X
+	pontos: 11
+}
+{
+	class: com.POO.snake.JogadorScore
+	nome: Plaver X
+	pontos: 8
+}
+{
+	class: com.POO.snake.JogadorScore
+	nome: Plaver X
+	pontos: 8
+}
+{
+	class: com.POO.snake.JogadorScore
+	nome: GSL
+	pontos: 6
+}
+{
+	class: com.POO.snake.JogadorScore
+	nome: Plaver X
+	pontos: 5
+}
+{
+	class: com.POO.snake.JogadorScore
+	nome: Plaver X
+	pontos: 5
+}
+]
