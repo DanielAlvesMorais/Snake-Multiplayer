@@ -41,7 +41,7 @@ public class GameScreen implements Screen {
         this.snake2 = new Snake(360, 240);
         this.moveInterval = 0.15f;
 
-        this.controller = new TecladoController(snake1, snake2);
+        this.controller = new TecladoController(this, snake1, snake2);
 
         this.apple = new Apple();
         reposicionarMaca();
@@ -76,11 +76,6 @@ public class GameScreen implements Screen {
     @Override
     public void render(float delta) {
         ScreenUtils.clear(0.0f, 0.5f, 0.0f, 1.0f);
-
-        if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.P)) {
-            game.setScreen(new Pause(game, this));
-            return;
-        }
 
         moveTimer += delta;
         tempoDeJogo += delta;

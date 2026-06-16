@@ -8,40 +8,37 @@ public class TecladoController extends InputAdapter {
 
     private Snake snake1;
     private Snake snake2;
+    private GameScreen gameScreen; // <-- Nova referência para controlar a pausa
 
     private Menu menuScreen;
     private Pause pauseScreen;
     private GameOver gameOverScreen;
     private RankScreen rankScreen;
 
-    // Construtor para a tela de Jogo (Controla as duas cobras)
-    public TecladoController(Snake snake1, Snake snake2) {
+    // Atualizado: Construtor do jogo agora recebe a GameScreen atual
+    public TecladoController(GameScreen gameScreen, Snake snake1, Snake snake2) {
+        this.gameScreen = gameScreen;
         this.snake1 = snake1;
         this.snake2 = snake2;
     }
 
     // Construtores específicos para cada tela mapear suas ações
-    public TecladoController(Menu menuScreen) {
-        this.menuScreen = menuScreen;
-    }
-
-    public TecladoController(Pause pauseScreen) {
-        this.pauseScreen = pauseScreen;
-    }
-
-    public TecladoController(GameOver gameOverScreen) {
-        this.gameOverScreen = gameOverScreen;
-    }
-
-    public TecladoController(RankScreen rankScreen) {
-        this.rankScreen = rankScreen;
-    }
+    public TecladoController(Menu menuScreen) { this.menuScreen = menuScreen; }
+    public TecladoController(Pause pauseScreen) { this.pauseScreen = pauseScreen; }
+    public TecladoController(GameOver gameOverScreen) { this.gameOverScreen = gameOverScreen; }
+    public TecladoController(RankScreen rankScreen) { this.rankScreen = rankScreen; }
 
     @Override
     public boolean keyDown(int keycode) {
         // --- CONTROLES EM JOGO ---
-        if (snake1 != null && snake2 != null) {
+        if (snake1 != null && snake2 != null && gameScreen != null) {
             switch (keycode) {
+                // Nova Tecla de Pausa: ESCAPE (ESC)
+                case Keys.ESCAPE:
+                    // Agora temos acesso ao game através da gameScreen de forma segura!
+                    gameScreen.game.setScreen(new Pause(gameScreen.game, gameScreen));
+                    return true;
+
                 // Cobra 1 (Setas)
                 case Keys.UP:
                     snake1.setDirection(Direction.UP);
@@ -149,7 +146,6 @@ public class TecladoController extends InputAdapter {
 
     @Override
     public boolean keyTyped(char character) {
-        // Captura digitação apenas ao colocar iniciais no placar
         if (gameOverScreen != null && gameOverScreen.WaitingForInitials()) {
             if (Character.isLetter(character)) {
                 gameOverScreen.adicionarLetra(character);

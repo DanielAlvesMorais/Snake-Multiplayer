@@ -6,8 +6,23 @@
 }
 {
 	class: com.POO.snake.JogadorScore
+	nome: DAD
+	pontos: 9
+}
+{
+	class: com.POO.snake.JogadorScore
+	nome: GLI
+	pontos: 7
+}
+{
+	class: com.POO.snake.JogadorScore
 	nome: AWE
 	pontos: 6
+}
+{
+	class: com.POO.snake.JogadorScore
+	nome: AWE
+	pontos: 5
 }
 {
 	class: com.POO.snake.JogadorScore
