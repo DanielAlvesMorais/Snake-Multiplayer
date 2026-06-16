@@ -1,37 +1,17 @@
 [
 {
 	class: com.POO.snake.JogadorScore
-	nome: Plaver X
-	pontos: 11
+	nome: AAA
+	pontos: 9
 }
 {
 	class: com.POO.snake.JogadorScore
-	nome: Plaver X
-	pontos: 8
-}
-{
-	class: com.POO.snake.JogadorScore
-	nome: Plaver X
-	pontos: 8
-}
-{
-	class: com.POO.snake.JogadorScore
-	nome: GSL
+	nome: AWE
 	pontos: 6
 }
 {
 	class: com.POO.snake.JogadorScore
-	nome: Plaver X
-	pontos: 5
-}
-{
-	class: com.POO.snake.JogadorScore
-	nome: Plaver X
-	pontos: 5
-}
-{
-	class: com.POO.snake.JogadorScore
-	nome: DDD
-	pontos: 5
+	nome: AWE
+	pontos: 4
 }
 ]

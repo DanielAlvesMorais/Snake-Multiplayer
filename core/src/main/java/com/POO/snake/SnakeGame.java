@@ -3,40 +3,37 @@ package com.POO.snake;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-/**
- * {@link com.badlogic.gdx.ApplicationListener} implementation shared by all
- * platforms.
- */
 public class SnakeGame extends Game {
-
     private SpriteBatch batch;
-    // private Texture image;
-    private Rank ranking; // Instância única do gerenciador de rank
-    
+    private Rank ranking;
 
     @Override
     public void create() {
+        // Inicializa o batch que todas as telas vão compartilhar para desenhar
         batch = new SpriteBatch();
-        ranking = new Rank(); // Carrega o ranking ao iniciar o jogo
-
+        
+        // Inicializa o sistema de Ranking
+        ranking = new Rank();
+        
+        // Define a primeira tela que vai aparecer quando o jogo abrir (o Menu)
         this.setScreen(new Menu(this));
     }
 
+    // Método essencial: permite que GameScreen, HudRenderer e as outras telas usem o mesmo batch
     public SpriteBatch getBatch() {
-        return this.batch;
+        return batch;
     }
 
+    // Método essencial: permite que o GameOver e o RankScreen acessem o ranking salvo
     public Rank getRanking() {
-        return this.ranking;
-    }
-
-    @Override
-    public void render() {
-        super.render();
+        return ranking;
     }
 
     @Override
     public void dispose() {
-        batch.dispose();
+        // limpa o batch da memória ao fechar o jogo
+        if (batch != null) {
+            batch.dispose();
+        }
     }
 }

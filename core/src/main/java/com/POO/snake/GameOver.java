@@ -24,7 +24,7 @@ public class GameOver extends ScreenAdapter {
     private static final int SCORE_MINIMO_RANK = 3; // Pontuação mínima
 
     private StringBuilder iniciais = new StringBuilder();
-    private boolean aguardandoIniciais;
+    private boolean WaitingInitials;
 
     public GameOver(SnakeGame game, String vencedor, int scoreFinal, Texture headP1, Texture headP2) {
         this.game = game;
@@ -36,7 +36,7 @@ public class GameOver extends ScreenAdapter {
         this.layout = new GlyphLayout();
 
         // Só pede iniciais se não for empate e atingir a pontuação mínima
-        this.aguardandoIniciais = !vencedor.equals("Empate") && scoreFinal >= SCORE_MINIMO_RANK;
+        this.WaitingInitials = !vencedor.equals("Empate") && scoreFinal >= SCORE_MINIMO_RANK;
 
         this.controller = new TecladoController(this);
         Gdx.input.setInputProcessor(controller);
@@ -74,7 +74,7 @@ public class GameOver extends ScreenAdapter {
         desenharTextoCentralizado("Pontuacao: " + scoreFinal + " pts", 240, larguraTela);
 
         // 3. SE COUBER NO RANKING, MOSTRA O INPUT. SE NÃO, MOSTRA AS INSTRUÇÕES NORMAIS
-        if (aguardandoIniciais) {
+        if (WaitingInitials) {
             font.getData().setScale(1.2f);
             font.setColor(Color.CYAN);
             desenharTextoCentralizado("Voce entrou no Ranking! Digite 3 iniciais:", 180, larguraTela);
@@ -110,31 +110,31 @@ public class GameOver extends ScreenAdapter {
     // Métodos de controle acionados pelo TecladoController
     public void adicionarLetra(char letra) {
         // Só adiciona se ainda não atingiu o limite de 3 caracteres
-        if (aguardandoIniciais && iniciais.length() < 3) {
+        if (WaitingInitials && iniciais.length() < 3) {
             iniciais.append(Character.toUpperCase(letra));
         }
     }
 
     public void removerUltimaLetra() {
-        if (aguardandoIniciais && iniciais.length() > 0) {
+        if (WaitingInitials && iniciais.length() > 0) {
             iniciais.deleteCharAt(iniciais.length() - 1);
         }
     }
 
     public void confirmarOuRestart() {
-        if (aguardandoIniciais) {
+        if (WaitingInitials) {
             if (iniciais.length() == 3) {
                 // Envia para a classe de Rank de forma desacoplada!
                 game.getRanking().verificarEAdicionarNovoScore(iniciais.toString().toUpperCase(), scoreFinal);
-                aguardandoIniciais = false; // Muda o estado da tela para exibir os comandos normais!
+                WaitingInitials = false; // Muda o estado da tela para exibir os comandos normais!
             }
         } else {
             restartGame();
         }
     }
 
-    public boolean isAguardandoIniciais() {
-        return aguardandoIniciais;
+    public boolean WaitingForInitials() {
+        return WaitingInitials;
     }
 
     public void restartGame() {

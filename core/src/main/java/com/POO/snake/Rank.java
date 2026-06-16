@@ -20,7 +20,7 @@ public class Rank {
     }
 
     private void carregarDoArquivo() {
-        var arquivo = Gdx.files.local("ranking.json");
+        com.badlogic.gdx.files.FileHandle arquivo = Gdx.files.local("ranking.json");
         if (arquivo.exists()) {
             String texto = arquivo.readString();
             // O LibGDX converte o JSON direto para um ArrayList de uma classe sua

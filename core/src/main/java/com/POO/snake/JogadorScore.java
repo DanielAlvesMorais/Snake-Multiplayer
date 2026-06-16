@@ -1,12 +1,10 @@
 package com.POO.snake;
 
-// Esta classe serve como o modelo (blueprint) para cada linha do seu ranking
 public class JogadorScore {
-    
+
     private String nome;
     private int pontos;
 
-    // O construtor vazio é OBRIGATÓRIO para o Json do LibGDX conseguir reconstruir o objeto
     public JogadorScore() {
     }
 
@@ -15,7 +13,6 @@ public class JogadorScore {
         this.pontos = pontos;
     }
 
-    // Getters e Setters (o componente Json também precisa dos setters para injetar os dados do arquivo)
     public String getNome() {
         return nome;
     }
@@ -24,7 +21,8 @@ public class JogadorScore {
         this.nome = nome;
     }
 
-    public int getPoints() { // Mantendo o padrão ou altere para getPontos se preferir
+    // Alterado para corresponder exatamente à propriedade 'pontos'
+    public int getPoints() {
         return pontos;
     }
 
