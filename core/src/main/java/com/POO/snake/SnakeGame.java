@@ -27,5 +27,6 @@ public class SnakeGame extends Game {
     @Override
     public void dispose() {
         batch.dispose();
+        SoundManager.getInstance().dispose();
     }
 }

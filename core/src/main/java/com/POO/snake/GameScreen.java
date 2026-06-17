@@ -122,6 +122,7 @@ public class GameScreen implements Screen {
                 && apple.getY() == head1.getY()) {
 
             snake1.eatApple();
+            SoundManager.getInstance().playEat();
 
             moveInterval = Math.max(
                     MIN_INTERVAL,
@@ -138,6 +139,8 @@ public class GameScreen implements Screen {
                 && apple.getY() == head2.getY()) {
 
             snake2.eatApple();
+            SoundManager.getInstance().playEat();
+
             moveInterval = Math.max(
                     MIN_INTERVAL,
                     moveInterval - SPEED_INCREASE
@@ -159,6 +162,7 @@ public class GameScreen implements Screen {
 
             
             reposicionarMaca();*/
+            SoundManager.getInstance().playCollision();
              game.setScreen(new GameOver(game));
         }
 
