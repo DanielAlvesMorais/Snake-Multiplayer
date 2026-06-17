@@ -2,413 +2,192 @@ package com.POO.snake;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 public class GameScreen implements Screen {
 
-    // Referência ao jogo principal
     final SnakeGame game;
 
     // Entidades do jogo
-    private Snake snake1;
-    private Snake snake2;
+    private final Snake snake1;
+    private final Snake snake2;
     private Apple apple;
-    private TecladoController controller;
+    private final TecladoController controller;
+
+    // Orquestradores de Alta Coesão
+    private final GameAssets assets;
+    private final SnakeRenderer snakeRenderer;
+    private final HudRenderer hudRenderer;
 
     // Controle de tempo do movimento
-    private float moveTimer = 0;
+    private float moveTimer_snake1 = 0;
+    private float moveTimer_snake2 = 0;
+    private float moveInterval_snake1 = 0.15f;
+    private float moveInterval_snake2 = 0.15f;
+    private static final float MIN_INTERVAL = 0.025f;
+    private static final float SPEED_INCREASE = 0.01f;
 
-    // Texturas da cobra 1
-    private Texture snake1HeadTexture;
-    private Texture snake1BodyTexture;
-    private Texture snake1TailTexture;
-    private Texture snake1CornerTexture;
-
-    // Texturas da cobra 2
-    private Texture snake2HeadTexture;
-    private Texture snake2BodyTexture;
-    private Texture snake2TailTexture;
-    private Texture snake2CornerTexture;
-
-    // Textura da maçã
-    private Texture appleTexture;
-
-    // Fundo (!Não adicionado!)
-    private Texture backgroundTexture;
-
-    // Posições antigas das caudas
-    private float oldTail1X, oldTail1Y;
-    private float oldTail2X, oldTail2Y;
-
-    private float moveInterval = 0.15f;
-    private static final float MIN_INTERVAL = 0.05f;
-    private static final float SPEED_INCREASE = 0.005f;
+    // Tempo de jogo
+    private float tempoDeJogo = 0f;
 
     public GameScreen(final SnakeGame game) {
         this.game = game;
 
-        snake1 = new Snake(280, 240);
-        snake2 = new Snake(360, 240);
-        moveInterval = 0.15f;
+        // Inicializa os renderizadores e assets desacoplados
+        this.assets = new GameAssets();
+        this.snakeRenderer = new SnakeRenderer(game.getBatch());
+        this.hudRenderer = new HudRenderer(game);
 
-        controller = new TecladoController(snake1, snake2);
+        // Inicializa as cobras nas posições iniciais
+        this.snake1 = new Snake(280, 240);
+        this.snake2 = new Snake(360, 240);
+        this.moveInterval_snake1 = 0.15f;
+        this.moveInterval_snake2 = 0.15f;
 
-        apple = new Apple();
+        this.controller = new TecladoController(this, snake1, snake2);
+
+        this.apple = new Apple();
         reposicionarMaca();
 
         Gdx.input.setInputProcessor(controller);
+    }
 
-        // Carrega as texturas
+    private String definirVencedor() {
+        boolean snake1Colidiu = snake1.checkCollision(snake2);
+        boolean snake2Colidiu = snake2.checkCollision(snake1);
 
-        appleTexture = new Texture("New Piskel (21).png");
+        if (snake1Colidiu && snake2Colidiu) {
+            if (snake1.getScore() > snake2.getScore()) {
+                return "P1";
+            }
+            if (snake2.getScore() > snake1.getScore()) {
+                return "P2";
+            }
+            return "Empate";
+        }
 
-        snake1HeadTexture = new Texture("snake2_head.png");
-        snake1BodyTexture = new Texture("snake2_body.png");
-        snake1TailTexture = new Texture("snake2_tail.png");
-        snake1CornerTexture = new Texture("snake2_corner.png");
+        if (snake1Colidiu) {
+            return "P2";
+        }
+        if (snake2Colidiu) {
+            return "P1";
+        }
 
-        snake2HeadTexture = new Texture("New Piskel (18).png");
-        snake2BodyTexture = new Texture("New Piskel (14).png");
-        snake2TailTexture = new Texture("New Piskel (15).png");
-        snake2CornerTexture = new Texture("New Piskel (19).png");
-
-        // Inicializa as caudas antigas com a posição inicial delas
-        oldTail1X = snake1.getBody().peekLast().getX();
-        oldTail1Y = snake1.getBody().peekLast().getY();
-        oldTail2X = snake2.getBody().peekLast().getX();
-        oldTail2Y = snake2.getBody().peekLast().getY();
-
-        backgroundTexture = new Texture("New Piskel (20).png");
+        return "Empate";
     }
 
     @Override
     public void render(float delta) {
-
         ScreenUtils.clear(0.0f, 0.5f, 0.0f, 1.0f);
 
-        if(Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.P)) {
-            game.setScreen(new Pause(game, this));
-        }
-        moveTimer += delta;
+        moveTimer_snake1 += delta;
+        moveTimer_snake2 += delta;
+        tempoDeJogo += delta;
 
-        // Guarda a cauda antiga ANTES do movimento acontecer
-        if (moveTimer > moveInterval) {
-
-            // Guarda a posição atual da cauda da cobra 1
-            SnakeBody tail1 = snake1.getBody().peekLast();
-            oldTail1X = tail1.getX();
-            oldTail1Y = tail1.getY();
-
-            // Guarda a posição atual da cauda da cobra 2
-            SnakeBody tail2 = snake2.getBody().peekLast();
-            oldTail2X = tail2.getX();
-            oldTail2Y = tail2.getY();
-
-            // Só depois move
+        if (moveTimer_snake1 > moveInterval_snake1) {
             snake1.move();
+            moveTimer_snake1 = 0;
+        }
+        if (moveTimer_snake2 > moveInterval_snake2) {
             snake2.move();
-
-            moveTimer = 0;
+            moveTimer_snake2 = 0;
         }
 
-        // Calcula o progresso do movimento (garantindo o limite máximo de 1.0f)
-        float alpha = Math.min(moveTimer / moveInterval, 1.0f);
+        float alpha = Math.min(moveTimer_snake1 / moveInterval_snake1, 1.0f);
+        float alpha2 = Math.min(moveTimer_snake2 / moveInterval_snake2, 1.0f);
 
-        // Verifica maçã para cobra 1
-        SnakeBody head1 = snake1.getBody().peekFirst();
-
-        if (apple.getX() == head1.getX()
-                && apple.getY() == head1.getY()) {
-
-            snake1.eatApple();
-            SoundManager.getInstance().playEat();
-
-            moveInterval = Math.max(
-                    MIN_INTERVAL,
-                    moveInterval - SPEED_INCREASE
-            );
-
-            reposicionarMaca();
+        // Checagem de colisões com a maçã
+        if(verificarColisaoMaca(snake1)) {
+            moveInterval_snake1 = Math.max(MIN_INTERVAL, moveInterval_snake1 - SPEED_INCREASE);
+        }
+        if(verificarColisaoMaca(snake2)) {
+            moveInterval_snake2 = Math.max(MIN_INTERVAL, moveInterval_snake2 - SPEED_INCREASE);
         }
 
-        // Verifica maçã para cobra 2
-        SnakeBody head2 = snake2.getBody().peekFirst();
-
-        if (apple.getX() == head2.getX()
-                && apple.getY() == head2.getY()) {
-
-            snake2.eatApple();
-            SoundManager.getInstance().playEat();
-
-            moveInterval = Math.max(
-                    MIN_INTERVAL,
-                    moveInterval - SPEED_INCREASE
-            );
-            reposicionarMaca();
-        }
-
-        // Colisões
-        if (snake1.checkCollision(snake2)
-                || snake2.checkCollision(snake1)) {
-
-           /* snake1 = new Snake(280, 240);
-            snake2 = new Snake(360, 240);
-            moveInterval = 0.15f;
-
-            controller = new TecladoController(snake1, snake2);
-
-            Gdx.input.setInputProcessor(controller);
-
-            
-            reposicionarMaca();*/
-            SoundManager.getInstance().playCollision();
-             game.setScreen(new GameOver(game));
-        }
-
-        game.getBatch().begin();
-
-        // Fundo 
-        if (backgroundTexture != null) {
-            game.getBatch().draw(
-                    backgroundTexture,
-                    0,
-                    0,
-                    Gdx.graphics.getWidth(),
-                    Gdx.graphics.getHeight()
-            );
-        }
-
-        // Maçã
-        game.getBatch().draw(
-                appleTexture,
-                apple.getX(),
-                apple.getY(),
-                20,
-                20
-        );
-
-        // Cobra 1
-        desenharCobra(
-                snake1,
-                snake1HeadTexture,
-                snake1BodyTexture,
-                snake1TailTexture,
-                snake1CornerTexture,
-                alpha,
-                oldTail1X,
-                oldTail1Y
-        );
-
-        // Cobra 2
-        desenharCobra(
-                snake2,
-                snake2HeadTexture,
-                snake2BodyTexture,
-                snake2TailTexture,
-                snake2CornerTexture,
-                alpha,
-                oldTail2X,
-                oldTail2Y
-        );
-
-        // Colisões
+        // Verifica colisão crítica estrutural antes do loop de desenho
         if (snake1.checkCollision(snake2) || snake2.checkCollision(snake1)) {
-            /*snake1 = new Snake(280, 240);
-            snake2 = new Snake(360, 240);
-            moveInterval = 0.15f;
-            controller = new TecladoController(snake1, snake2);
-            Gdx.input.setInputProcessor(controller);
+            finalizarPartida();
+            return;
+        }
+
+// --- DESENHO DA ÁREA DE JOGO ---
+        game.getBatch().begin(); // Abre o lote de renderização
+
+        // 1. Desenha o Fundo
+        if (assets.backgroundTexture != null) {
+            game.getBatch().draw(assets.backgroundTexture, 0, 0, 640, 480);
+        }
+
+        // 2. Desenha a Maçã
+        game.getBatch().draw(assets.appleTexture, apple.getX(), apple.getY(), 20, 20);
+
+        // 3. Desenha as Cobras delegando ao SnakeRenderer (AGORA DENTRO DO BEGIN/END)
+        snakeRenderer.desenhar(snake1, assets.snake1HeadTexture, assets.snake1BodyTexture, assets.snake1TailTexture, assets.snake1CornerTexture, alpha);
+        snakeRenderer.desenhar(snake2, assets.snake2HeadTexture, assets.snake2BodyTexture, assets.snake2TailTexture, assets.snake2CornerTexture, alpha);
+
+        game.getBatch().end(); // Fecha o lote de renderização com tudo dentro!
+
+        // 4. Renderiza elementos estéticos de texto via HudRenderer
+        // (Não se preocupe com este, o HudRenderer já abre e fecha o próprio batch internamente)
+        hudRenderer.desenhar(assets, snake1.getScore(), snake2.getScore(), tempoDeJogo);
+    }
+
+    private boolean verificarColisaoMaca(Snake snake) {
+        SnakeBody head = snake.getBody().peekFirst();
+        if (apple.getX() == head.getX() && apple.getY() == head.getY()) {
+            snake.eatApple();
+            SoundManager.getInstance().playEat();
             reposicionarMaca();
 
-            // REINICIA AS CAUDAS AQUI TAMBÉM
-            oldTail1X = snake1.getBody().peekLast().getX();
-            oldTail1Y = snake1.getBody().peekLast().getY();
-            oldTail2X = snake2.getBody().peekLast().getX();
-            oldTail2Y = snake2.getBody().peekLast().getY();
-            */
-                game.setScreen(new GameOver(game));
-            }
-
-        game.getBatch().end();
+            return true;
+        }
+        return false;
     }
 
-    /**
-     * Desenha uma cobra usando cabeça, corpo e cauda.
-     */
-    private void desenharCobra(
-        Snake snake,
-        Texture headTexture,
-        Texture bodyTexture,
-        Texture tailTexture,
-        Texture cornerTexture,
-        float alpha,
-        float oldTailX,
-        float oldTailY) {
-
-    SnakeBody[] partes = snake.getBody().toArray(new SnakeBody[0]);
-    int tamanho = partes.length;
-
-    for (int i = 0; i < tamanho; i++) {
-
-        SnakeBody atual = partes[i];
-
-        Texture textura;
-        float angulo = 0;
-
-        float renderX = atual.getX();
-        float renderY = atual.getY();
-
-        // CABEÇA
-        if (i == 0) {
-
-            textura = headTexture;
-
-            switch (snake.getDirection()) {
-                case UP:
-                    angulo = 270;
-                    break;
-                case DOWN:
-                    angulo = 90;
-                    break;
-                case LEFT:
-                    angulo = 0;
-                    break;
-                case RIGHT:
-                    angulo = 180;
-                    break;
-            }
-        }
-
-        // CAUDA
-        else if (i == tamanho - 1) {
-
-            textura = tailTexture;
-
-            SnakeBody frente = partes[i - 1];
-
-            int dx = frente.getX() - atual.getX();
-            int dy = frente.getY() - atual.getY();
-
-            if (dx > 0) {
-                angulo = 180;
-            }
-            else if (dx < 0) {
-                angulo = 0;
-            }
-            else if (dy > 0) {
-                angulo = 270;
-            }
-            else {
-                angulo = 90;
-            }
-        }
-
-        // CORPO
-        else {
-
-            SnakeBody anterior = partes[i - 1];
-            SnakeBody proximo = partes[i + 1];
-
-            int dx1 = anterior.getX() - atual.getX();
-            int dy1 = anterior.getY() - atual.getY();
-
-            int dx2 = proximo.getX() - atual.getX();
-            int dy2 = proximo.getY() - atual.getY();
-
-            if (dy1 == 0 && dy2 == 0) {
-
-                textura = bodyTexture;
-                angulo = 0;
-            }
-            else if (dx1 == 0 && dx2 == 0) {
-
-                textura = bodyTexture;
-                angulo = 90;
-            }
-            else {
-
-                textura = cornerTexture;
-
-                if ((dy1 < 0 && dx2 > 0) ||
-                    (dx1 > 0 && dy2 < 0)) {
-
-                    angulo = 90;
-                }
-                else if ((dx1 < 0 && dy2 < 0) ||
-                         (dy1 < 0 && dx2 < 0)) {
-
-                    angulo = 0;
-                }
-                else if ((dy1 > 0 && dx2 < 0) ||
-                         (dx1 < 0 && dy2 > 0)) {
-
-                    angulo = 270;
-                }
-                else {
-
-                    angulo = 180;
-                }
-            }
-        }
-
-        game.getBatch().draw(
-                textura,
-                renderX,
-                renderY,
-                10,
-                10,
-                20,
-                20,
-                1f,
-                1f,
-                angulo,
-                0,
-                0,
-                textura.getWidth(),
-                textura.getHeight(),
-                false,
-                false
-        );
-    }
-}
-
-    /**
-     * Garante que a maçã não apareça sobre nenhuma cobra.
-     */
     private void reposicionarMaca() {
-
         boolean posicaoValida = false;
-
         while (!posicaoValida) {
-
             apple = new Apple();
             posicaoValida = true;
 
             for (SnakeBody pedaco : snake1.getBody()) {
-
-                if (apple.getX() == pedaco.getX()
-                        && apple.getY() == pedaco.getY()) {
-
+                if (apple.getX() == pedaco.getX() && apple.getY() == pedaco.getY()) {
                     posicaoValida = false;
                     break;
                 }
             }
-
             if (!posicaoValida) {
                 continue;
             }
 
             for (SnakeBody pedaco : snake2.getBody()) {
-
-                if (apple.getX() == pedaco.getX()
-                        && apple.getY() == pedaco.getY()) {
-
+                if (apple.getX() == pedaco.getX() && apple.getY() == pedaco.getY()) {
                     posicaoValida = false;
                     break;
                 }
             }
         }
+    }
+
+    private void finalizarPartida() {
+        String vencedor = definirVencedor();
+        SoundManager.getInstance().playCollision();
+        int score;
+        switch (vencedor) {
+            case "P1":
+                score = snake1.getScore();
+                break;
+            case "P2":
+                score = snake2.getScore();
+                break;
+            case "Empate":
+                score = Math.max(snake1.getScore(), snake2.getScore());
+                break;
+            default:
+                score = 0;
+        }
+
+        game.setScreen(new GameOver(game, vencedor, score, assets.snake1HeadTexture, assets.snake2HeadTexture));
     }
 
     @Override
@@ -437,21 +216,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void dispose() {
-
-        snake1HeadTexture.dispose();
-        snake1BodyTexture.dispose();
-        snake1TailTexture.dispose();
-        snake1CornerTexture.dispose();
-
-        snake2HeadTexture.dispose();
-        snake2BodyTexture.dispose();
-        snake2TailTexture.dispose();
-        snake2CornerTexture.dispose();
-
-        appleTexture.dispose();
-
-        if (backgroundTexture != null) {
-            backgroundTexture.dispose();
-        }
+        assets.dispose();
+        hudRenderer.dispose();
     }
 }

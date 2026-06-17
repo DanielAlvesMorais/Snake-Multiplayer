@@ -14,6 +14,7 @@ public class Menu extends ScreenAdapter {
     private BitmapFont font;
     private TecladoController controller;
     private GlyphLayout layout;
+    
 
     public Menu(SnakeGame game) {
         this.game = game;
@@ -58,6 +59,13 @@ public class Menu extends ScreenAdapter {
         float xpause = (larguraTela - layout.width) / 2;
         font.draw(game.getBatch(), "Pressione P para pausar", xpause, 150);
 
+        //---- DESENHANDO A INSTRUÇÃO DE ACESSAR O RANKING
+        font.setColor(Color.LIGHT_GRAY);
+        font.getData().setScale(1.2f); // Define o tamanho antes de medir
+        layout.setText(font, "Pressione R para acessar o ranking"); // Mede o texto
+        
+        float xrank = (larguraTela - layout.width) / 2;
+        font.draw(game.getBatch(), "Pressione R para acessar o ranking", xrank, 180);
 
         game.getBatch().end();
     }
@@ -66,8 +74,17 @@ public class Menu extends ScreenAdapter {
         game.setScreen(new GameScreen(game));
     }
 
+    // Adicione isso dentro de Menu.java, perto do enterGame()
+public void enterRanking() {
+    game.setScreen(new RankScreen(game));
+}
+
     @Override
     public void dispose() {
         font.dispose();
     }
+
+     public void returnToMenu() {
+        game.setScreen(new Menu(game));
+}
 }

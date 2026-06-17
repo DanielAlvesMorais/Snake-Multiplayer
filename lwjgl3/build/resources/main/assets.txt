@@ -1,19 +1,9 @@
 570635__bsp7176__move.wav
 570636__bsp7176__food.wav
-Apple.png
-New Piskel (11).png
-New Piskel (12).png
-New Piskel (13).png
-New Piskel (14).png
-New Piskel (15).png
-New Piskel (16).png
-New Piskel (17).png
-New Piskel (18).png
-New Piskel (19).png
-New Piskel (20).png
-New Piskel (21).png
+apple.png
+background.png
 explosion.wav
-libgdx.png
+ranking.json
 snake1_body.png
 snake1_corner.png
 snake1_head.png
