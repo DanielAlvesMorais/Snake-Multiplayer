@@ -20,10 +20,12 @@ public class GameScreen implements Screen {
     private final HudRenderer hudRenderer;
 
     // Controle de tempo do movimento
-    private float moveTimer = 0;
-    private float moveInterval = 0.15f;
-    private static final float MIN_INTERVAL = 0.05f;
-    private static final float SPEED_INCREASE = 0.005f;
+    private float moveTimer_snake1 = 0;
+    private float moveTimer_snake2 = 0;
+    private float moveInterval_snake1 = 0.15f;
+    private float moveInterval_snake2 = 0.15f;
+    private static final float MIN_INTERVAL = 0.025f;
+    private static final float SPEED_INCREASE = 0.01f;
 
     // Tempo de jogo
     private float tempoDeJogo = 0f;
@@ -39,7 +41,8 @@ public class GameScreen implements Screen {
         // Inicializa as cobras nas posições iniciais
         this.snake1 = new Snake(280, 240);
         this.snake2 = new Snake(360, 240);
-        this.moveInterval = 0.15f;
+        this.moveInterval_snake1 = 0.15f;
+        this.moveInterval_snake2 = 0.15f;
 
         this.controller = new TecladoController(this, snake1, snake2);
 
@@ -77,20 +80,29 @@ public class GameScreen implements Screen {
     public void render(float delta) {
         ScreenUtils.clear(0.0f, 0.5f, 0.0f, 1.0f);
 
-        moveTimer += delta;
+        moveTimer_snake1 += delta;
+        moveTimer_snake2 += delta;
         tempoDeJogo += delta;
 
-        if (moveTimer > moveInterval) {
+        if (moveTimer_snake1 > moveInterval_snake1) {
             snake1.move();
+            moveTimer_snake1 = 0;
+        }
+        if (moveTimer_snake2 > moveInterval_snake2) {
             snake2.move();
-            moveTimer = 0;
+            moveTimer_snake2 = 0;
         }
 
-        float alpha = Math.min(moveTimer / moveInterval, 1.0f);
+        float alpha = Math.min(moveTimer_snake1 / moveInterval_snake1, 1.0f);
+        float alpha2 = Math.min(moveTimer_snake2 / moveInterval_snake2, 1.0f);
 
         // Checagem de colisões com a maçã
-        verificarColisaoMaca(snake1);
-        verificarColisaoMaca(snake2);
+        if(verificarColisaoMaca(snake1)) {
+            moveInterval_snake1 = Math.max(MIN_INTERVAL, moveInterval_snake1 - SPEED_INCREASE);
+        }
+        if(verificarColisaoMaca(snake2)) {
+            moveInterval_snake2 = Math.max(MIN_INTERVAL, moveInterval_snake2 - SPEED_INCREASE);
+        }
 
         // Verifica colisão crítica estrutural antes do loop de desenho
         if (snake1.checkCollision(snake2) || snake2.checkCollision(snake1)) {
@@ -103,7 +115,7 @@ public class GameScreen implements Screen {
 
         // 1. Desenha o Fundo
         if (assets.backgroundTexture != null) {
-            game.getBatch().draw(assets.backgroundTexture, 0, 0, 640, 440);
+            game.getBatch().draw(assets.backgroundTexture, 0, 0, 640, 480);
         }
 
         // 2. Desenha a Maçã
@@ -120,13 +132,16 @@ public class GameScreen implements Screen {
         hudRenderer.desenhar(assets, snake1.getScore(), snake2.getScore(), tempoDeJogo);
     }
 
-    private void verificarColisaoMaca(Snake snake) {
+    private boolean verificarColisaoMaca(Snake snake) {
         SnakeBody head = snake.getBody().peekFirst();
         if (apple.getX() == head.getX() && apple.getY() == head.getY()) {
             snake.eatApple();
-            moveInterval = Math.max(MIN_INTERVAL, moveInterval - SPEED_INCREASE);
+            SoundManager.getInstance().playEat();
             reposicionarMaca();
+
+            return true;
         }
+        return false;
     }
 
     private void reposicionarMaca() {
@@ -156,6 +171,7 @@ public class GameScreen implements Screen {
 
     private void finalizarPartida() {
         String vencedor = definirVencedor();
+        SoundManager.getInstance().playCollision();
         int score;
         switch (vencedor) {
             case "P1":

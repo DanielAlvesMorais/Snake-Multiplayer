@@ -4,6 +4,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class SnakeGame extends Game {
+
     private SpriteBatch batch;
     private Rank ranking;
 
@@ -11,10 +12,10 @@ public class SnakeGame extends Game {
     public void create() {
         // Inicializa o batch que todas as telas vão compartilhar para desenhar
         batch = new SpriteBatch();
-        
+
         // Inicializa o sistema de Ranking
         ranking = new Rank();
-        
+
         // Define a primeira tela que vai aparecer quando o jogo abrir (o Menu)
         this.setScreen(new Menu(this));
     }
@@ -35,5 +36,9 @@ public class SnakeGame extends Game {
         if (batch != null) {
             batch.dispose();
         }
+        if (SoundManager.getInstance() != null) {
+            SoundManager.getInstance().dispose();
+        }
+
     }
 }

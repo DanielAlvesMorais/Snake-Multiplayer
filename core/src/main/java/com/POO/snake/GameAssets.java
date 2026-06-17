@@ -22,18 +22,18 @@ public class GameAssets {
     public final BitmapFont font;
 
     public GameAssets() {
-        appleTexture = new Texture("New Piskel (21).png");
-        backgroundTexture = new Texture("New Piskel (20).png");
+        appleTexture = new Texture("apple.png");
+        backgroundTexture = new Texture("background.png");
 
-        snake1HeadTexture = new Texture("snake2_head.png");
-        snake1BodyTexture = new Texture("snake2_body.png");
-        snake1TailTexture = new Texture("snake2_tail.png");
-        snake1CornerTexture = new Texture("snake2_corner.png");
+        snake1HeadTexture = new Texture("snake1_head.png");
+        snake1BodyTexture = new Texture("snake1_body.png");
+        snake1TailTexture = new Texture("snake1_tail.png");
+        snake1CornerTexture = new Texture("snake1_corner.png");
 
-        snake2HeadTexture = new Texture("New Piskel (18).png");
-        snake2BodyTexture = new Texture("New Piskel (14).png");
-        snake2TailTexture = new Texture("New Piskel (15).png");
-        snake2CornerTexture = new Texture("New Piskel (19).png");
+        snake2HeadTexture = new Texture("snake2_head.png");
+        snake2BodyTexture = new Texture("snake2_body.png");
+        snake2TailTexture = new Texture("snake2_tail.png");
+        snake2CornerTexture = new Texture("snake2_corner.png");
 
         font = new BitmapFont();
         font.getData().setScale(1.2f);

@@ -42,6 +42,7 @@ public class Snake {
         // muda a direção da cobra
         this.direction = direction;
         this.hasChangedDirection = true;
+        SoundManager.getInstance().playMove();
     }
 
     // Método responsável pela movimentação

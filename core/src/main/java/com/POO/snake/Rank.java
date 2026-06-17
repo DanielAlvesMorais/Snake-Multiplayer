@@ -1,10 +1,11 @@
 package com.POO.snake;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.utils.Json;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.utils.Json;
 
 public class Rank {
 
@@ -42,7 +43,7 @@ public class Rank {
         });
 
         // 3. Opcional: Define o limite de quantos scores manter no ranking (ex: top 5)
-        if (listaRanking.size() > 10) {
+        if (listaRanking.size() > 5) {
             listaRanking.remove(listaRanking.size() - 1);
         }
 

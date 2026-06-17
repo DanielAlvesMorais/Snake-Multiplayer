@@ -53,7 +53,7 @@ public class RankScreen extends ScreenAdapter {
             layout.setText(font, "Nenhum recorde registrado ainda!");
             font.draw(game.getBatch(), "Nenhum recorde registrado ainda!", (larguraTela - layout.width) / 2, yPosicao);
         } else {
-            for (int i = 0; i < lista.size(); i++) {
+            for (int i = 0; i < Math.min(lista.size(), 5); i++) {
                 JogadorScore jogador = lista.get(i);
                 String linhaText = (i + 1) + ". " + jogador.getNome() + " - " + jogador.getPoints() + " pts";
                 

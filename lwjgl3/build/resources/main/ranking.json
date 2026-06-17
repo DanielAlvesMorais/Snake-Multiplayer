@@ -1,8 +1,43 @@
 [
 {
 	class: com.POO.snake.JogadorScore
+	nome: DDG
+	pontos: 99
+}
+{
+	class: com.POO.snake.JogadorScore
+	nome: SSJ
+	pontos: 14
+}
+{
+	class: com.POO.snake.JogadorScore
+	nome: DEL
+	pontos: 14
+}
+{
+	class: com.POO.snake.JogadorScore
+	nome: TXT
+	pontos: 13
+}
+{
+	class: com.POO.snake.JogadorScore
 	nome: AAA
 	pontos: 9
+}
+{
+	class: com.POO.snake.JogadorScore
+	nome: DAD
+	pontos: 9
+}
+{
+	class: com.POO.snake.JogadorScore
+	nome: DAN
+	pontos: 9
+}
+{
+	class: com.POO.snake.JogadorScore
+	nome: ADA
+	pontos: 8
 }
 {
 	class: com.POO.snake.JogadorScore
@@ -13,15 +48,5 @@
 	class: com.POO.snake.JogadorScore
 	nome: AWE
 	pontos: 6
-}
-{
-	class: com.POO.snake.JogadorScore
-	nome: AWE
-	pontos: 5
-}
-{
-	class: com.POO.snake.JogadorScore
-	nome: AWE
-	pontos: 4
 }
 ]
