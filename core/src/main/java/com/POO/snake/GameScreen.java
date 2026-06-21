@@ -4,22 +4,28 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.utils.ScreenUtils;
 
+/**
+ * The main gameplay screen responsible for driving the game loop, 
+ * updating snake positions, handling collisions, and coordinating rendering.
+ *
+ * @author Davi N. P.
+ * @author Daniel A. M.
+ * @author Gustavo S. L.
+ * @version 1.0
+ */
 public class GameScreen implements Screen {
 
     final SnakeGame game;
 
-    // Entidades do jogo
     private final Snake snake1;
     private final Snake snake2;
     private Apple apple;
-    private final TecladoController controller;
+    private final KeyboardController controller;
 
-    // Orquestradores de Alta Coesão
     private final GameAssets assets;
     private final SnakeRenderer snakeRenderer;
     private final HudRenderer hudRenderer;
 
-    // Controle de tempo do movimento
     private float moveTimer_snake1 = 0;
     private float moveTimer_snake2 = 0;
     private float moveInterval_snake1 = 0.15f;
@@ -27,36 +33,43 @@ public class GameScreen implements Screen {
     private static final float MIN_INTERVAL = 0.025f;
     private static final float SPEED_INCREASE = 0.01f;
 
-    // Tempo de jogo
-    private float tempoDeJogo = 0f;
+    private float gameTime = 0f;
 
+    /**
+     * Initializes a new match, creating the snakes, apple, renderers, and input controllers.
+     *
+     * @param game The main game instance.
+     */
     public GameScreen(final SnakeGame game) {
         this.game = game;
 
-        // Inicializa os renderizadores e assets desacoplados
         this.assets = new GameAssets();
         this.snakeRenderer = new SnakeRenderer(game.getBatch());
         this.hudRenderer = new HudRenderer(game);
 
-        // Inicializa as cobras nas posições iniciais
         this.snake1 = new Snake(280, 240);
         this.snake2 = new Snake(360, 240);
         this.moveInterval_snake1 = 0.15f;
         this.moveInterval_snake2 = 0.15f;
 
-        this.controller = new TecladoController(this, snake1, snake2);
+        this.controller = new KeyboardController(this, snake1, snake2);
 
         this.apple = new Apple();
-        reposicionarMaca();
+        repositionApple();
 
         Gdx.input.setInputProcessor(controller);
     }
 
-    private String definirVencedor() {
-        boolean snake1Colidiu = snake1.checkCollision(snake2);
-        boolean snake2Colidiu = snake2.checkCollision(snake1);
+    /**
+     * Determines the winner of the match based on collision states and scores.
+     *
+     * @return A string representing the result ("P1", "P2", or "Empate").
+     */
+    private String determineWinner() {
+        boolean snake1Collided = snake1.checkCollision(snake2);
+        boolean snake2Collided = snake2.checkCollision(snake1);
 
-        if (snake1Colidiu && snake2Colidiu) {
+        if (snake1Collided && snake2Collided) {
             if (snake1.getScore() > snake2.getScore()) {
                 return "P1";
             }
@@ -66,10 +79,10 @@ public class GameScreen implements Screen {
             return "Empate";
         }
 
-        if (snake1Colidiu) {
+        if (snake1Collided) {
             return "P2";
         }
-        if (snake2Colidiu) {
+        if (snake2Collided) {
             return "P1";
         }
 
@@ -82,7 +95,7 @@ public class GameScreen implements Screen {
 
         moveTimer_snake1 += delta;
         moveTimer_snake2 += delta;
-        tempoDeJogo += delta;
+        gameTime += delta;
 
         if (moveTimer_snake1 > moveInterval_snake1) {
             snake1.move();
@@ -96,84 +109,87 @@ public class GameScreen implements Screen {
         float alpha = Math.min(moveTimer_snake1 / moveInterval_snake1, 1.0f);
         float alpha2 = Math.min(moveTimer_snake2 / moveInterval_snake2, 1.0f);
 
-        // Checagem de colisões com a maçã
-        if(verificarColisaoMaca(snake1)) {
+        if(checkAppleCollision(snake1)) {
             moveInterval_snake1 = Math.max(MIN_INTERVAL, moveInterval_snake1 - SPEED_INCREASE);
         }
-        if(verificarColisaoMaca(snake2)) {
+        if(checkAppleCollision(snake2)) {
             moveInterval_snake2 = Math.max(MIN_INTERVAL, moveInterval_snake2 - SPEED_INCREASE);
         }
 
-        // Verifica colisão crítica estrutural antes do loop de desenho
         if (snake1.checkCollision(snake2) || snake2.checkCollision(snake1)) {
-            finalizarPartida();
+            endMatch();
             return;
         }
 
-// --- DESENHO DA ÁREA DE JOGO ---
-        game.getBatch().begin(); // Abre o lote de renderização
+        game.getBatch().begin(); 
 
-        // 1. Desenha o Fundo
         if (assets.backgroundTexture != null) {
             game.getBatch().draw(assets.backgroundTexture, 0, 0, 640, 480);
         }
 
-        // 2. Desenha a Maçã
         game.getBatch().draw(assets.appleTexture, apple.getX(), apple.getY(), 20, 20);
 
-        // 3. Desenha as Cobras delegando ao SnakeRenderer (AGORA DENTRO DO BEGIN/END)
-        snakeRenderer.desenhar(snake1, assets.snake1HeadTexture, assets.snake1BodyTexture, assets.snake1TailTexture, assets.snake1CornerTexture, alpha);
-        snakeRenderer.desenhar(snake2, assets.snake2HeadTexture, assets.snake2BodyTexture, assets.snake2TailTexture, assets.snake2CornerTexture, alpha);
+        snakeRenderer.draw(snake1, assets.snake1HeadTexture, assets.snake1BodyTexture, assets.snake1TailTexture, assets.snake1CornerTexture, alpha);
+        snakeRenderer.draw(snake2, assets.snake2HeadTexture, assets.snake2BodyTexture, assets.snake2TailTexture, assets.snake2CornerTexture, alpha2); // Used alpha2 for snake2
 
-        game.getBatch().end(); // Fecha o lote de renderização com tudo dentro!
+        game.getBatch().end(); 
 
-        // 4. Renderiza elementos estéticos de texto via HudRenderer
-        // (Não se preocupe com este, o HudRenderer já abre e fecha o próprio batch internamente)
-        hudRenderer.desenhar(assets, snake1.getScore(), snake2.getScore(), tempoDeJogo);
+        hudRenderer.draw(assets, snake1.getScore(), snake2.getScore(), gameTime);
     }
 
-    private boolean verificarColisaoMaca(Snake snake) {
+    /**
+     * Checks whether the given snake's head intersects with the apple's coordinates.
+     *
+     * @param snake The snake to test for collision.
+     * @return True if a collision occurred, false otherwise.
+     */
+    private boolean checkAppleCollision(Snake snake) {
         SnakeBody head = snake.getBody().peekFirst();
         if (apple.getX() == head.getX() && apple.getY() == head.getY()) {
             snake.eatApple();
             SoundManager.getInstance().playEat();
-            reposicionarMaca();
-
+            repositionApple();
             return true;
         }
         return false;
     }
 
-    private void reposicionarMaca() {
-        boolean posicaoValida = false;
-        while (!posicaoValida) {
+    /**
+     * Generates a new random position for the apple, ensuring it does not spawn inside any snake body.
+     */
+    private void repositionApple() {
+        boolean validPosition = false;
+        while (!validPosition) {
             apple = new Apple();
-            posicaoValida = true;
+            validPosition = true;
 
-            for (SnakeBody pedaco : snake1.getBody()) {
-                if (apple.getX() == pedaco.getX() && apple.getY() == pedaco.getY()) {
-                    posicaoValida = false;
+            for (SnakeBody piece : snake1.getBody()) {
+                if (apple.getX() == piece.getX() && apple.getY() == piece.getY()) {
+                    validPosition = false;
                     break;
                 }
             }
-            if (!posicaoValida) {
+            if (!validPosition) {
                 continue;
             }
 
-            for (SnakeBody pedaco : snake2.getBody()) {
-                if (apple.getX() == pedaco.getX() && apple.getY() == pedaco.getY()) {
-                    posicaoValida = false;
+            for (SnakeBody piece : snake2.getBody()) {
+                if (apple.getX() == piece.getX() && apple.getY() == piece.getY()) {
+                    validPosition = false;
                     break;
                 }
             }
         }
     }
 
-    private void finalizarPartida() {
-        String vencedor = definirVencedor();
+    /**
+     * Triggers the end of the match logic, pausing gameplay and advancing to the Game Over screen.
+     */
+    private void endMatch() {
+        String winner = determineWinner();
         SoundManager.getInstance().playCollision();
         int score;
-        switch (vencedor) {
+        switch (winner) {
             case "P1":
                 score = snake1.getScore();
                 break;
@@ -187,30 +203,21 @@ public class GameScreen implements Screen {
                 score = 0;
         }
 
-        game.setScreen(new GameOver(game, vencedor, score, assets.snake1HeadTexture, assets.snake2HeadTexture));
+        game.setScreen(new GameOver(game, winner, score, assets.snake1HeadTexture, assets.snake2HeadTexture));
     }
 
-    @Override
-    public void show() {
-    }
+    @Override public void show() {}
+    @Override public void resize(int width, int height) {}
+    @Override public void pause() {}
+    @Override public void resume() {}
+    @Override public void hide() {}
 
-    @Override
-    public void resize(int width, int height) {
-    }
-
-    @Override
-    public void pause() {
-    }
-
-    @Override
-    public void resume() {
-    }
-
-    @Override
-    public void hide() {
-    }
-
-    public TecladoController getController() {
+    /**
+     * Retrieves the keyboard controller currently attached to this game screen.
+     *
+     * @return The active KeyboardController.
+     */
+    public KeyboardController getController() {
         return this.controller;
     }
 

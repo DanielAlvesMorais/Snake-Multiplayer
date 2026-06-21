@@ -7,7 +7,25 @@ dependencies {
   if(enableGraalNative == 'true') {
     implementation "io.github.berstanio:gdx-svmhelper-annotations:$graalHelperVersion"
   }
+  
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'
+  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
+  testRuntimeOnly 'org.junit.platform:junit-platform-launcher' // ADICIONE ESTA LINHA AQUI
+  testImplementation 'org.mockito:mockito-core:5.3.1'
 }
+test {
+  useJUnitPlatform()
+          
+  // Adicione este bloco para exibir os detalhes no terminal
+  testLogging {
+    events "passed", "skipped", "failed"
+    showExceptions true
+    showCauses true
+    showStackTraces true
+    }
+}
+
+    // E COLOQUE A ATIVAÇÃO DO JUNIT AQUI, LOGO ABAIXO DO BLOCO DEPENDENCIES:
 
 jar {
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE

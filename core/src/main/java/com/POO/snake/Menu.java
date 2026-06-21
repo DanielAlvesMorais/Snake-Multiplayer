@@ -7,21 +7,33 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.utils.ScreenUtils;
 
+/**
+ * The main menu screen presented when the game is launched.
+ * Provides navigation to start a new game or view the local ranking.
+ *
+ * @author Davi N. P.
+ * @author Daniel A. M.
+ * @author Gustavo S. L.
+ * @version 1.0
+ */
 public class Menu extends ScreenAdapter {
 
-    // Variaveis do jogo, da fonte e do input
     private SnakeGame game;
     private BitmapFont font;
-    private TecladoController controller;
+    private KeyboardController controller;
     private GlyphLayout layout;
-    
 
+    /**
+     * Initializes the Menu interface and assigns the keyboard input processor.
+     *
+     * @param game The main game instance.
+     */
     public Menu(SnakeGame game) {
         this.game = game;
 
-        this.controller = new TecladoController(this);
+        this.controller = new KeyboardController(this);
         this.font = new BitmapFont();
-        this.layout = new GlyphLayout(); // Inicializa o medidor
+        this.layout = new GlyphLayout();
         Gdx.input.setInputProcessor(controller);
     }
 
@@ -29,62 +41,64 @@ public class Menu extends ScreenAdapter {
     public void render(float delta) {
         ScreenUtils.clear(Color.NAVY);
 
-        // Largura da tela do jogo (640)
-        float larguraTela = Gdx.graphics.getWidth();
+        float screenWidth = Gdx.graphics.getWidth();
 
         game.getBatch().begin();
 
-        // --- DESENHANDO O TÍTULO ---
         font.setColor(Color.WHITE);
-        font.getData().setScale(2f); // Define o tamanho antes de medir
-        layout.setText(font, "SNAKE MULTIPLAYER"); // Mede o texto
+        font.getData().setScale(2f);
+        layout.setText(font, "SNAKE MULTIPLAYER");
 
-        // Conta matemática: (Metade da Tela) - (Metade do tamanho do texto)
-        float xTitulo = (larguraTela - layout.width) / 2;
-        font.draw(game.getBatch(), "SNAKE MULTIPLAYER", xTitulo, 350);
+        float titleX = (screenWidth - layout.width) / 2;
+        font.draw(game.getBatch(), "SNAKE MULTIPLAYER", titleX, 350);
 
-        // --- DESENHANDO O SUBTÍTULO ---
         font.setColor(Color.LIGHT_GRAY);
-        font.getData().setScale(1.2f); // Define o tamanho antes de medir
-        layout.setText(font, "Pressione Enter para Jogar"); // Mede o texto
+        font.getData().setScale(1.2f);
+        layout.setText(font, "Pressione Enter para Jogar");
 
-        float xSubtitulo = (larguraTela - layout.width) / 2;
-        font.draw(game.getBatch(), "Pressione Enter para Jogar", xSubtitulo, 250);
+        float subtitleX = (screenWidth - layout.width) / 2;
+        font.draw(game.getBatch(), "Pressione Enter para Jogar", subtitleX, 250);
 
-        //---- DESENHANDO A INSTRUÇÃO DE PAUSA
         font.setColor(Color.LIGHT_GRAY);
-        font.getData().setScale(1.2f); // Define o tamanho antes de medir
-        layout.setText(font, "Pressione P para pausar"); // Mede o texto
+        font.getData().setScale(1.2f);
+        layout.setText(font, "Pressione P para pausar"); 
 
-        float xpause = (larguraTela - layout.width) / 2;
-        font.draw(game.getBatch(), "Pressione P para pausar", xpause, 150);
+        float pauseX = (screenWidth - layout.width) / 2;
+        font.draw(game.getBatch(), "Pressione P para pausar", pauseX, 150);
 
-        //---- DESENHANDO A INSTRUÇÃO DE ACESSAR O RANKING
         font.setColor(Color.LIGHT_GRAY);
-        font.getData().setScale(1.2f); // Define o tamanho antes de medir
-        layout.setText(font, "Pressione R para acessar o ranking"); // Mede o texto
-        
-        float xrank = (larguraTela - layout.width) / 2;
-        font.draw(game.getBatch(), "Pressione R para acessar o ranking", xrank, 180);
+        font.getData().setScale(1.2f);
+        layout.setText(font, "Pressione R para acessar o ranking");
+
+        float rankX = (screenWidth - layout.width) / 2;
+        font.draw(game.getBatch(), "Pressione R para acessar o ranking", rankX, 180);
 
         game.getBatch().end();
     }
 
+    /**
+     * Dispatches a screen change to start a new GameScreen session.
+     */
     public void enterGame() {
         game.setScreen(new GameScreen(game));
     }
 
-    // Adicione isso dentro de Menu.java, perto do enterGame()
-public void enterRanking() {
-    game.setScreen(new RankScreen(game));
-}
+    /**
+     * Dispatches a screen change to open the RankScreen.
+     */
+    public void enterRanking() {
+        game.setScreen(new RankScreen(game));
+    }
 
     @Override
     public void dispose() {
         font.dispose();
     }
 
-     public void returnToMenu() {
+    /**
+     * Refreshes the menu state by instantiating a clean copy of the Menu screen.
+     */
+    public void returnToMenu() {
         game.setScreen(new Menu(game));
-}
+    }
 }

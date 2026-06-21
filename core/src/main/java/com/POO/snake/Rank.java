@@ -7,67 +7,98 @@ import java.util.Comparator;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Json;
 
+/**
+ * Manages the persistent top-score ranking system.
+ * This class handles saving and loading player scores to and from a local JSON file,
+ * keeping the data sorted and limiting the leaderboard to the top scores.
+ *
+ * @author Davi N. P.
+ * @author Daniel A. M.
+ * @author Gustavo S. L.
+ * @version 1.0
+ */
 public class Rank {
 
-    // Sua lista Java que guarda os dados na memória RAM enquanto o jogo roda
-    private ArrayList<JogadorScore> listaRanking;
+    private ArrayList<PlayerScore> rankingList;
     private Json json;
-    private String name; // Variável para armazenar o nome do jogador
+    private String name; 
 
+    /**
+     * Initializes the ranking system by attempting to load existing scores from the disk.
+     */
     public Rank() {
         this.json = new Json();
-        this.listaRanking = new ArrayList<>();
-        carregarDoArquivo();
+        this.rankingList = new ArrayList<>();
+        loadFromFile();
     }
 
-    private void carregarDoArquivo() {
-        com.badlogic.gdx.files.FileHandle arquivo = Gdx.files.local("ranking.json");
-        if (arquivo.exists()) {
-            String texto = arquivo.readString();
-            // O LibGDX converte o JSON direto para um ArrayList de uma classe sua
-            this.listaRanking = json.fromJson(ArrayList.class, JogadorScore.class, texto);
+    /**
+     * Reads the saved ranking from the local JSON file into memory.
+     * Uses LibGDX's Json utility to deserialize the text directly into an ArrayList.
+     */
+    private void loadFromFile() {
+        com.badlogic.gdx.files.FileHandle file = Gdx.files.local("ranking.json");
+        if (file.exists()) {
+            String text = file.readString();
+            this.rankingList = json.fromJson(ArrayList.class, PlayerScore.class, text);
         }
     }
 
-    // A verificação é feita direto na memória RAM! Super rápido.
-    public void verificarEAdicionarNovoScore(String nome, int pontos) {
-        // 1. Adiciona o novo score na lista Java
-        listaRanking.add(new JogadorScore(nome, pontos));
+    /**
+     * Evaluates a new score, adds it to the ranking list, sorts the list in descending order,
+     * ensures the list does not exceed the top 5 limit, and saves the updated list to the disk.
+     *
+     * @param name   The string identifier/initials of the player.
+     * @param points The final score achieved by the player.
+     */
+    public void checkAndAddNewScore(String name, int points) {
+        rankingList.add(new PlayerScore(name, points));
 
-        // 2. Ordena a lista do maior para o menor score
-        Collections.sort(listaRanking, new Comparator<JogadorScore>() {
+        Collections.sort(rankingList, new Comparator<PlayerScore>() {
             @Override
-            public int compare(JogadorScore o1, JogadorScore o2) {
-                return Integer.compare(o2.getPoints(), o1.getPoints()); // Decrescente
+            public int compare(PlayerScore o1, PlayerScore o2) {
+                return Integer.compare(o2.getPoints(), o1.getPoints()); 
             }
         });
 
-        // 3. Opcional: Define o limite de quantos scores manter no ranking (ex: top 5)
-        if (listaRanking.size() > 5) {
-            listaRanking.remove(listaRanking.size() - 1);
+        if (rankingList.size() > 5) {
+            rankingList.remove(rankingList.size() - 1);
         }
 
-        // 4. Salva no arquivo apenas quando a lista mudar!
-        salvarNoArquivo();
+        saveToFile();
     }
 
+    /**
+     * Retrieves the stored player name.
+     *
+     * @return The currently stored player name.
+     */
     public String getPlayerName(){
-        
         return this.name;
     }
 
-    private void salvarNoArquivo() {
-        String textoJson = json.prettyPrint(listaRanking); // Transforma a lista em texto JSON
-        Gdx.files.local("ranking.json").writeString(textoJson, false);
+    /**
+     * Serializes the current ranking list to a formatted JSON string and writes it to the local file.
+     */
+    private void saveToFile() {
+        String jsonText = json.prettyPrint(rankingList); 
+        Gdx.files.local("ranking.json").writeString(jsonText, false);
     }
 
-    public ArrayList<JogadorScore> getListaRanking() {
-        return this.listaRanking;
+    /**
+     * Retrieves the list of high scores.
+     *
+     * @return An ArrayList containing the sorted PlayerScore entries.
+     */
+    public ArrayList<PlayerScore> getRankingList() {
+        return this.rankingList;
     }
 
-    public void resetarRanking() {
-        this.listaRanking.clear();
-        salvarNoArquivo();
+    /**
+     * Completely clears the ranking data from both memory and the local disk.
+     */
+    public void resetRanking() {
+        this.rankingList.clear();
+        saveToFile();
     }
-
 }

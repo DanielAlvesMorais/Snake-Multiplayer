@@ -3,17 +3,26 @@ package com.POO.snake;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 
+/**
+ * Centralized repository for all textures and fonts used in the game.
+ * Assets are loaded once upon creation and shared across different screens to optimize memory.
+ *
+ * @author Davi N. P.
+ * @author Daniel A. M.
+ * @author Gustavo S. L.
+ * @version 1.0
+ */
 public class GameAssets {
     public final Texture appleTexture;
     public final Texture backgroundTexture;
 
-    // Texturas da Cobra 1
+    // Snake 1 textures
     public final Texture snake1HeadTexture;
     public final Texture snake1BodyTexture;
     public final Texture snake1TailTexture;
     public final Texture snake1CornerTexture;
 
-    // Texturas da Cobra 2
+    // Snake 2 textures
     public final Texture snake2HeadTexture;
     public final Texture snake2BodyTexture;
     public final Texture snake2TailTexture;
@@ -21,6 +30,9 @@ public class GameAssets {
 
     public final BitmapFont font;
 
+    /**
+     * Loads every required texture and font from the disk into memory.
+     */
     public GameAssets() {
         appleTexture = new Texture("apple.png");
         backgroundTexture = new Texture("background.png");
@@ -39,6 +51,9 @@ public class GameAssets {
         font.getData().setScale(1.2f);
     }
 
+    /**
+     * Safely releases all textures and fonts from the GPU/CPU memory.
+     */
     public void dispose() {
         appleTexture.dispose();
         if (backgroundTexture != null) {

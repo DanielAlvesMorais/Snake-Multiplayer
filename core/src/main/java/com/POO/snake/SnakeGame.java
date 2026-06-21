@@ -3,42 +3,63 @@ package com.POO.snake;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
+/**
+ * The core application entry point inheriting from LibGDX's Game class.
+ * Acts as the orchestrator for the entire application, holding globally shared
+ * resources like the SpriteBatch and the persistent ranking system, and delegating
+ * the render loop to the currently active screen.
+ *
+ * @author Davi N. P.
+ * @author Daniel A. M.
+ * @author Gustavo S. L.
+ * @version 1.0
+ */
 public class SnakeGame extends Game {
 
     private SpriteBatch batch;
     private Rank ranking;
 
+    /**
+     * Called when the application is first created.
+     * Initializes global resources and transitions to the main Menu.
+     */
     @Override
     public void create() {
-        // Inicializa o batch que todas as telas vão compartilhar para desenhar
         batch = new SpriteBatch();
-
-        // Inicializa o sistema de Ranking
         ranking = new Rank();
-
-        // Define a primeira tela que vai aparecer quando o jogo abrir (o Menu)
         this.setScreen(new Menu(this));
     }
 
-    // Método essencial: permite que GameScreen, HudRenderer e as outras telas usem o mesmo batch
+    /**
+     * Provides access to the shared SpriteBatch to be used by various screens.
+     * Centralizing the batch prevents heavy memory duplication.
+     *
+     * @return The active SpriteBatch.
+     */
     public SpriteBatch getBatch() {
         return batch;
     }
 
-    // Método essencial: permite que o GameOver e o RankScreen acessem o ranking salvo
+    /**
+     * Provides access to the game's ranking manager.
+     *
+     * @return The initialized Rank instance.
+     */
     public Rank getRanking() {
         return ranking;
     }
 
+    /**
+     * Called when the application is destroyed.
+     * Safely frees heavy graphical and audio resources from system memory.
+     */
     @Override
     public void dispose() {
-        // limpa o batch da memória ao fechar o jogo
         if (batch != null) {
             batch.dispose();
         }
         if (SoundManager.getInstance() != null) {
             SoundManager.getInstance().dispose();
         }
-
     }
 }

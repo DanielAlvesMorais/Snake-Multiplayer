@@ -1,0 +1,40 @@
+# =========================
+# Gradle Build Files
+# =========================
+.gradle/
+build/
+*/build/
+out/
+
+# =========================
+# Compiled Java Files
+# =========================
+*.class
+*.log
+*.jar
+*.war
+
+# =========================
+# IDE Configurations (IntelliJ, Eclipse, VSCode)
+# =========================
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+
+# VS Code
+.vscode/
+
+# =========================
+# OS-Specific Files (Windows / Mac)
+# =========================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+$RECYCLE.BIN/
