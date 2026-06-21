@@ -61,21 +61,21 @@ public class Menu extends ScreenAdapter {
 
         font.setColor(Color.LIGHT_GRAY);
         font.getData().setScale(1.2f);
-        layout.setText(font, "Pressione P para pausar"); 
+        layout.setText(font, "Pressione Esc para pausar"); 
 
         float pauseX = (screenWidth - layout.width) / 2;
-        font.draw(game.getBatch(), "Pressione P para pausar", pauseX, 150);
+        font.draw(game.getBatch(), "Pressione Esc para pausar", pauseX, 150);
 
         font.setColor(Color.LIGHT_GRAY);
         font.getData().setScale(1.2f);
-        layout.setText(font, "Pressione R para acessar o ranking");
+        layout.setText(font, "Pressione Esc para acessar o ranking");
 
         float rankX = (screenWidth - layout.width) / 2;
         font.draw(game.getBatch(), "Pressione R para acessar o ranking", rankX, 180);
 
         game.getBatch().end();
-    }
-
+    }               
+             
     /**
      * Dispatches a screen change to start a new GameScreen session.
      */
