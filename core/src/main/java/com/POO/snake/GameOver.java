@@ -12,6 +12,11 @@ import com.badlogic.gdx.utils.ScreenUtils;
  * Screen displayed after a match concludes.
  * Shows the winner, final score, and handles the logic for capturing player initials
  * if their score qualifies for the top ranking.
+ * <p>
+ * {@link GameAssets} is instantiated once in the constructor and disposed in
+ * {@link #dispose()} — never inside the render loop — to avoid per-frame
+ * texture reloads and the associated memory leak.
+ * </p>
  *
  * @author Davi N. P.
  * @author Daniel A. M.
@@ -20,39 +25,41 @@ import com.badlogic.gdx.utils.ScreenUtils;
  */
 public class GameOver extends ScreenAdapter {
 
-    private SnakeGame game;
-    private BitmapFont font;
-    private GlyphLayout layout;
-    private KeyboardController controller;
+    private final SnakeGame game;
+    private final BitmapFont font;
+    private final GlyphLayout layout;
+    private final KeyboardController controller;
+    private final GameAssets assets;
 
-    private String winner;
-    private int finalScore;
-    private Texture headP1;
-    private Texture headP2;
+    private final String winner;
+    private final int finalScore;
 
-    private static final int SPRITE_SIZE = 80;
-    private static final int MINIMUM_RANK_SCORE = 3;
+    private static final int SPRITE_SIZE        = 80;
+    private static final int MINIMUM_RANK_SCORE = 1;
 
-    private StringBuilder initials = new StringBuilder();
+    private final StringBuilder initials = new StringBuilder();
     private boolean waitingInitials;
 
     /**
      * Initializes the Game Over screen with match statistics.
+     * Assets are loaded once here so they can be safely reused across every
+     * render call and properly released in {@link #dispose()}.
      *
      * @param game       The main game instance.
-     * @param winner     A string identifier for the winner (e.g., "P1", "P2", "Empate").
+     * @param winner     A string identifier for the winner
+     *                   ({@code "P1"}, {@code "P2"}, or {@code "Tie"}).
      * @param finalScore The highest score achieved in the match.
-     * @param headP1     Texture of player 1's head for display.
-     * @param headP2     Texture of player 2's head for display.
      */
     public GameOver(SnakeGame game, String winner, int finalScore) {
-        this.game = game;
-        this.winner = winner;
+        this.game       = game;
+        this.winner     = winner;
         this.finalScore = finalScore;
-        this.font = new BitmapFont();
-        this.layout = new GlyphLayout();
+        this.font       = new BitmapFont();
+        this.layout     = new GlyphLayout();
+        // Load assets ONCE here, not inside render().
+        this.assets     = new GameAssets();
 
-        this.waitingInitials = !winner.equals("Empate") && finalScore >= MINIMUM_RANK_SCORE;
+        this.waitingInitials = !winner.equals("Tie") && finalScore >= MINIMUM_RANK_SCORE;
 
         this.controller = new KeyboardController(this);
         Gdx.input.setInputProcessor(controller);
@@ -62,59 +69,71 @@ public class GameOver extends ScreenAdapter {
     public void render(float delta) {
         ScreenUtils.clear(0f, 0.2f, 0f, 1);
         float screenWidth = Gdx.graphics.getWidth();
-        GameAssets assets = new GameAssets();
 
+        // assets is a field — no allocation happens here.
         game.getBatch().begin();
 
         font.getData().setScale(2.5f);
-        if (winner.equals("Empate")) {
+        if (winner.equals("Tie")) {
             font.setColor(Color.YELLOW);
-            drawCenteredText("EMPATE!", 400, screenWidth);
-            game.getBatch().draw(assets.snake1HeadTexture, (screenWidth / 2) - 100, 280, SPRITE_SIZE, SPRITE_SIZE);
-            game.getBatch().draw(assets.snake2HeadTexture, (screenWidth / 2) + 20, 280, SPRITE_SIZE, SPRITE_SIZE);
+            drawCenteredText("TIE!", 400, screenWidth);
+            game.getBatch().draw(assets.snake1HeadTexture,
+                    (screenWidth / 2) - 100, 280, SPRITE_SIZE, SPRITE_SIZE);
+            game.getBatch().draw(assets.snake2HeadTexture,
+                    (screenWidth / 2) + 20,  280, SPRITE_SIZE, SPRITE_SIZE);
         } else {
             font.setColor(Color.GREEN);
-            drawCenteredText(winner + " VENCEU!", 400, screenWidth);
-            Texture winnerHead = winner.equals("P1") ? assets.snake1HeadTexture : assets.snake2HeadTexture;
-            game.getBatch().draw(winnerHead, (screenWidth - SPRITE_SIZE) / 2, 280, SPRITE_SIZE, SPRITE_SIZE);
+            drawCenteredText(winner + " WINS!", 400, screenWidth);
+            Texture winnerHead = winner.equals("P1")
+                    ? assets.snake1HeadTexture
+                    : assets.snake2HeadTexture;
+            game.getBatch().draw(winnerHead,
+                    (screenWidth - SPRITE_SIZE) / 2f, 280, SPRITE_SIZE, SPRITE_SIZE);
         }
 
         font.getData().setScale(1.5f);
         font.setColor(Color.WHITE);
-        drawCenteredText("Pontuacao: " + finalScore + " pts", 240, screenWidth);
+        drawCenteredText("Score: " + finalScore + " pts", 240, screenWidth);
 
         if (waitingInitials) {
             font.getData().setScale(1.2f);
             font.setColor(Color.CYAN);
-            drawCenteredText("Voce entrou no Ranking! Digite 3 iniciais:", 180, screenWidth);
+            drawCenteredText("You made the Ranking! Enter 3 initials:", 180, screenWidth);
 
             String initialsText = initials.toString();
             while (initialsText.length() < 3) {
                 initialsText += " _";
             }
-
             font.getData().setScale(2.5f);
             font.setColor(Color.WHITE);
             drawCenteredText(initialsText.toUpperCase(), 130, screenWidth);
         } else {
             font.getData().setScale(1.1f);
             font.setColor(Color.WHITE);
-            drawCenteredText("Pressione ENTER para Jogar Novamente", 160, screenWidth);
+            drawCenteredText("Press ENTER to Play Again",   160, screenWidth);
             font.setColor(Color.LIGHT_GRAY);
-            drawCenteredText("Pressione R para ver o Ranking", 120, screenWidth);
-            drawCenteredText("Pressione ESC para fechar o jogo", 80, screenWidth);
+            drawCenteredText("Press R to view Ranking",     120, screenWidth);
+            drawCenteredText("Press ESC to close the game",  80, screenWidth);
         }
 
         game.getBatch().end();
     }
 
+    /**
+     * Draws a string horizontally centred on the screen at the given Y position.
+     *
+     * @param text        The string to render.
+     * @param y           Vertical position in screen coordinates.
+     * @param screenWidth Total screen width used for centring calculation.
+     */
     private void drawCenteredText(String text, float y, float screenWidth) {
         layout.setText(font, text);
         font.draw(game.getBatch(), text, (screenWidth - layout.width) / 2, y);
     }
 
     /**
-     * Appends a character to the player's initials if the maximum length is not yet reached.
+     * Appends a character to the player's initials if the maximum length of 3
+     * has not yet been reached.
      *
      * @param letter The character inputted by the user.
      */
@@ -134,14 +153,15 @@ public class GameOver extends ScreenAdapter {
     }
 
     /**
-     * Confirms the entered initials and sends them to the rank system, or restarts the game
-     * if the ranking phase is already completed.
+     * Confirms the entered initials and persists them to the ranking, or restarts
+     * the game if the ranking phase is already completed.
      */
     public void confirmOrRestart() {
         if (waitingInitials) {
             if (initials.length() == 3) {
-                game.getRanking().checkAndAddNewScore(initials.toString().toUpperCase(), finalScore);
-                waitingInitials = false; 
+                game.getRanking().checkAndAddNewScore(
+                        initials.toString().toUpperCase(), finalScore);
+                waitingInitials = false;
             }
         } else {
             restartGame();
@@ -149,7 +169,7 @@ public class GameOver extends ScreenAdapter {
     }
 
     /**
-     * Checks if the screen is currently in the state of waiting for player initials.
+     * Checks if the screen is currently waiting for the player to enter initials.
      *
      * @return True if waiting for initials, false otherwise.
      */
@@ -157,20 +177,29 @@ public class GameOver extends ScreenAdapter {
         return waitingInitials;
     }
 
+    /** Transitions to a fresh {@link GameScreen}. */
     public void restartGame() {
         game.setScreen(new GameScreen(game));
     }
 
+    /** Transitions to the {@link RankScreen}. */
     public void viewRanking() {
         game.setScreen(new RankScreen(game));
     }
 
+    /** Transitions back to the main {@link Menu}. */
     public void returnToMenu() {
         game.setScreen(new Menu(game));
     }
 
+    /**
+     * Releases all resources owned by this screen.
+     * Disposes the {@link GameAssets} instance loaded in the constructor,
+     * preventing GPU/CPU memory leaks.
+     */
     @Override
     public void dispose() {
         font.dispose();
+        assets.dispose();
     }
 }

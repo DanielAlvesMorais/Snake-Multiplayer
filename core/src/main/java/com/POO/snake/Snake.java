@@ -7,6 +7,11 @@ import java.util.LinkedList;
  * Represents the snake entity within the game.
  * Uses a double-ended queue (Deque) to track the coordinates of each body segment,
  * handling grid-based movement, direction changes, growth, and collision detection.
+ * <p>
+ * This class is intentionally free of any LibGDX or audio dependencies so that it
+ * can be unit-tested without a running OpenGL context. Audio feedback for direction
+ * changes is handled by the caller ({@link KeyboardController}) to preserve MVC separation.
+ * </p>
  *
  * @author Davi N. P.
  * @author Daniel A. M.
@@ -15,7 +20,7 @@ import java.util.LinkedList;
  */
 public class Snake {
 
-    private Deque<SnakeBody> body = new LinkedList<>();
+    private final Deque<SnakeBody> body = new LinkedList<>();
     private Direction direction;
     private boolean hasChangedDirection = false;
     private boolean hasEatenApple = false;
@@ -29,15 +34,20 @@ public class Snake {
      */
     public Snake(int x, int y) {
         body.addFirst(new SnakeBody(x, y));
-        body.add(new SnakeBody(x, y - 20));
-        body.add(new SnakeBody(x, y - 40));
+        body.add(new SnakeBody(x, y - GameConfig.TILE_SIZE));
+        body.add(new SnakeBody(x, y - GameConfig.TILE_SIZE * 2));
         this.direction = Direction.UP;
     }
 
     /**
      * Attempts to update the snake's travel direction.
-     * Prevents multiple direction changes in a single tick and ignores attempts to reverse
-     * directly into its own body.
+     * Prevents multiple direction changes in a single tick and ignores attempts to
+     * reverse directly into its own body.
+     * <p>
+     * Audio feedback is intentionally <em>not</em> triggered here; it is the
+     * responsibility of {@link KeyboardController#changeDirection} to play the
+     * move sound after a successful direction change.
+     * </p>
      *
      * @param direction The new intended Direction.
      */
@@ -45,21 +55,22 @@ public class Snake {
         if (this.hasChangedDirection) {
             return;
         }
-        if ((this.direction == Direction.UP && direction == Direction.DOWN)
-                || (this.direction == Direction.DOWN && direction == Direction.UP)
-                || (this.direction == Direction.LEFT && direction == Direction.RIGHT)
-                || (this.direction == Direction.RIGHT && direction == Direction.LEFT)) {
+        if ((this.direction == Direction.UP    && direction == Direction.DOWN)
+         || (this.direction == Direction.DOWN  && direction == Direction.UP)
+         || (this.direction == Direction.LEFT  && direction == Direction.RIGHT)
+         || (this.direction == Direction.RIGHT && direction == Direction.LEFT)) {
             return;
         }
-        
         this.direction = direction;
         this.hasChangedDirection = true;
-        SoundManager.getInstance().playMove();
+        // NOTE: no SoundManager call here — audio is handled by KeyboardController
+        // to keep this class free of LibGDX audio dependencies.
     }
 
     /**
      * Calculates the next position of the head based on the current direction,
-     * wraps the position around screen boundaries, and updates the body queue.
+     * wraps the position around screen boundaries using {@link GameConfig} constants,
+     * and updates the body queue.
      */
     public void move() {
         SnakeBody head = body.peekFirst();
@@ -68,40 +79,39 @@ public class Snake {
 
         switch (this.direction) {
             case UP:
-                newY += 20;
-                if (newY >= 440) {  
+                newY += GameConfig.TILE_SIZE;
+                if (newY >= GameConfig.PLAY_HEIGHT) {
                     newY = 0;
                 }
                 break;
             case DOWN:
-                newY -= 20;
+                newY -= GameConfig.TILE_SIZE;
                 if (newY < 0) {
-                    newY = 440 - 20; 
+                    newY = GameConfig.PLAY_HEIGHT - GameConfig.TILE_SIZE;
                 }
                 break;
             case LEFT:
-                newX -= 20;
+                newX -= GameConfig.TILE_SIZE;
                 if (newX < 0) {
-                    newX = 620;
+                    newX = GameConfig.SCREEN_WIDTH - GameConfig.TILE_SIZE;
                 }
                 break;
             case RIGHT:
-                newX += 20;
-                if (newX >= 640) {
+                newX += GameConfig.TILE_SIZE;
+                if (newX >= GameConfig.SCREEN_WIDTH) {
                     newX = 0;
                 }
                 break;
         }
 
-        SnakeBody newHead = new SnakeBody(newX, newY);
-        body.addFirst(newHead);
-        
+        body.addFirst(new SnakeBody(newX, newY));
+
         if (this.hasEatenApple) {
             this.hasEatenApple = false;
         } else {
             body.removeLast();
         }
-        
+
         this.hasChangedDirection = false;
     }
 
@@ -133,13 +143,13 @@ public class Snake {
      */
     public boolean checkCollision(Snake otherSnake) {
         SnakeBody head = body.peekFirst();
-        
+
         for (SnakeBody part : body) {
             if (part != head && part.getX() == head.getX() && part.getY() == head.getY()) {
                 return true;
             }
         }
-        
+
         for (SnakeBody part : otherSnake.getBody()) {
             if (part.getX() == head.getX() && part.getY() == head.getY()) {
                 return true;

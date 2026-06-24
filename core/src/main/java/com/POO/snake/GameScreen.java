@@ -71,11 +71,11 @@ public class GameScreen implements Screen {
         if (snake1Collided && snake2Collided) {
             if (snake1.getScore() > snake2.getScore()) return "P1";
             if (snake2.getScore() > snake1.getScore()) return "P2";
-            return "Empate";
+            return "Tie";
         }
         if (snake1Collided) return "P2";
         if (snake2Collided) return "P1";
-        return "Empate";
+        return "Tie";
     }
 
     @Override
