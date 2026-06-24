@@ -1,6 +1,6 @@
 570635__bsp7176__move.wav
 570636__bsp7176__food.wav
-Apple.png
+apple.png
 background.png
 explosion.wav
 ranking.json
