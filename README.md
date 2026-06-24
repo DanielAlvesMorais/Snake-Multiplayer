@@ -1,4 +1,3 @@
-
 # Multiplayer Snake Game — Project Report
 
 ## Group:
@@ -46,7 +45,9 @@ MAIN_MENU
     │                   │
     │               PAUSE_MENU ──► GAMEPLAY (resume)
     │
-    └─ Ranking ───► RANK_SCREEN
+    ├─ Ranking ───► RANK_SCREEN
+    │
+    └─ Instructions ► INSTRUCTIONS_SCREEN ──► MAIN_MENU
 ```
 
 `SnakeGame` (Main) owns the render loop and delegates each frame to the active `Screen`. `GameScreen` handles the gameplay loop, while other screens handle UI and state transitions.
@@ -89,9 +90,10 @@ The `Rank` class uses LibGDX's `Json` utility. When a player qualifies for the t
 
 ## 3. Comments About the Code
 
-* **Decoupled Rendering:** Rendering logic is strictly separated from business logic. `Snake.java` only knows about X and Y coordinates. `SnakeRenderer.java` is responsible for interpreting those coordinates, picking the correct textures (corners, tails), and applying rotation mathematics before sending them to the GPU.
-* **Centralized Input:** Instead of each screen polling for keys, `KeyboardController` extends `InputAdapter`. It receives references to the active screen entities and uses `switch` statements to route commands. This prevents input ghosting across screens.
-* **Testing with LibGDX Mocking:** To test pure logic without launching an OpenGL window, the JUnit setup (`@BeforeAll`) uses Mockito to mock `Gdx.audio` and `Gdx.files`. This allows classes like `Snake` to be tested instantly without throwing `NullPointerException` when trying to load `.wav` files.
+* **Decoupled Rendering:** Rendering logic is strictly separated from business logic. `Snake.java` only knows about X and Y coordinates and has zero LibGDX imports, allowing it to be unit-tested without an OpenGL context. `SnakeRenderer.java` is responsible for interpreting those coordinates, picking the correct textures (corners, tails), and applying rotation mathematics before sending them to the GPU.
+* **Centralized Input:** Instead of each screen polling for keys, `KeyboardController` extends `InputAdapter`. It receives references to the active screen entities and uses `switch` statements to route commands. This prevents input ghosting across screens. Audio feedback for direction changes is triggered here rather than inside `Snake.setDirection()`, keeping `Snake` free of audio dependencies.
+* **Centralized Configuration:** `GameConfig` holds all grid and screen constants (`TILE_SIZE`, `GRID_COLS`, `GRID_ROWS`, `SCREEN_WIDTH`, `PLAY_HEIGHT`, `SCREEN_HEIGHT`). Every class that needs a dimension references these constants, eliminating magic numbers.
+* **Testing with LibGDX Mocking:** Because `Snake` has no LibGDX dependencies, `SnakeTest` runs as plain JUnit 5 without any mock setup. For classes that do touch LibGDX (such as `Rank`), the JUnit setup uses Mockito to mock `Gdx.audio` and `Gdx.files`, allowing tests to run without launching an OpenGL window.
 
 ## 4. Test Plan
 
@@ -103,11 +105,16 @@ Tests are written in JUnit 5. Each test class focuses on one source class and ex
 * `testBasicMovement`: Verifies head coordinates update correctly based on direction.
 * `testValidAndInvalidDirectionChange`: Validates orthogonal turns and rejects 180-degree self-reversals.
 * `testEatingAppleIncreasesScoreAndSize`: Asserts that eating prevents tail removal and increments score.
-* `testCollisionWithItself`: Simulates overlapping body coordinates and triggers collision detection.
+* `testSelfCollisionDetected`: Simulates overlapping body coordinates and triggers self-collision detection.
+* `testNoFalseCollisionWhenFar`: Asserts no collision is reported when snakes are far apart.
+* `testCrossCollisionWithOpponent`: Verifies cross-collision detection when heads overlap.
+* `testMultipleDirectionChangesInOneTick`: Ensures only one direction change per tick is accepted.
+* `testWrappingTopBoundary`: Verifies wrapping from the top edge to Y=0.
+* `testWrappingRightBoundary`: Verifies wrapping from the right edge to X=0.
 
 **AppleTest**
 
-* `testAppleCoordinatesBoundsAndMultiples`: Uses `@RepeatedTest(50)` to ensure random generation always aligns with the 20x20 pixel grid and stays within screen bounds (620x420).
+* `testAppleCoordinatesBoundsAndMultiples`: Uses `@RepeatedTest(50)` to ensure random generation always aligns with the tile grid and stays within screen bounds defined by `GameConfig`.
 
 **KeyboardControllerTest**
 
@@ -126,19 +133,29 @@ Tests are written in JUnit 5. Each test class focuses on one source class and ex
 
 * `testCreationAndGetters`: Verifies segment coordinate storage.
 
+**GameScreenLogicTest**
+
+* `testOnlySnake1Collides_P2Wins`: Only P1 collides — P2 wins.
+* `testOnlySnake2Collides_P1Wins`: Only P2 collides — P1 wins.
+* `testBothCollide_HigherScoreWins_P1`: Both collide, P1 has higher score — P1 wins.
+* `testBothCollide_HigherScoreWins_P2`: Both collide, P2 has higher score — P2 wins.
+* `testBothCollide_EqualScore_Tie`: Both collide with equal scores — Tie.
+* `testNeitherCollides_Tie`: Neither collides — result is Tie.
+
 ## 5. Test Results
 
 All tests passed with no failures or skipped cases (Gradle test run, JUnit 5).
 
-| **Test class**       | **Tests** | **Failures** | **Skipped** | **Duration** |
-| -------------------------- | --------------- | ------------------ | ----------------- | ------------------ |
-| `AppleTest`              | 50              | 0                  | 0                 | 0.052 s            |
-| `KeyboardControllerTest` | 1               | 0                  | 0                 | 0.038 s            |
-| `PlayerScoreTest`        | 2               | 0                  | 0                 | 0.002 s            |
-| `RankTest`               | 2               | 0                  | 0                 | 0.045 s            |
-| `SnakeBodyTest`          | 1               | 0                  | 0                 | 0.001 s            |
-| `SnakeTest`              | 5               | 0                  | 0                 | 0.015 s            |
-| **Total**            | **61**    | **0**        | **0**       | **0.153 s**  |
+| **Test class**           | **Tests** | **Failures** | **Skipped** | **Duration** |
+| ------------------------ | --------- | ------------ | ----------- | ------------ |
+| `AppleTest`              | 50        | 0            | 0           | 0.052 s      |
+| `GameScreenLogicTest`    | 6         | 0            | 0           | 0.003 s      |
+| `KeyboardControllerTest` | 1         | 0            | 0           | 0.038 s      |
+| `PlayerScoreTest`        | 2         | 0            | 0           | 0.002 s      |
+| `RankTest`               | 2         | 0            | 0           | 0.045 s      |
+| `SnakeBodyTest`          | 1         | 0            | 0           | 0.001 s      |
+| `SnakeTest`              | 10        | 0            | 0           | 0.018 s      |
+| **Total**                | **72**    | **0**        | **0**       | **0.159 s**  |
 
 ## 6. Build Procedures
 
@@ -147,15 +164,15 @@ All tests passed with no failures or skipped cases (Gradle test run, JUnit 5).
 * Java 11 or newer (JDK).
 * No other tools need to be installed manually; the Gradle wrapper handles everything else.
 
-**Gradlew way: Clone and run**
+**Clone and run**
 
 1. Clone the repository
 
 **Bash**
 
 ```
-git clone https://github.com/SeuUsuario/Multiplayer-Snake-Game.git
-cd Multiplayer-Snake-Game
+git clone https://github.com/DanielAlvesMorais/Snake-Multiplayer.git
+cd Snake-Multiplayer
 ```
 
 2. Clean previous builds and run the desktop launcher
@@ -163,12 +180,22 @@ cd Multiplayer-Snake-Game
 **Bash**
 
 ```
-# On Linux/Mac:
+# On Windows/Linux/Mac:
 ./gradlew clean lwjgl3:run
 
-# On Windows:
-gradlew.bat clean lwjgl3:run
 ```
+
+**Run the test suite**
+
+**Bash**
+
+```
+# On Windows/Linux/Mac:
+./gradlew core:test
+
+```
+
+*The HTML test report will be available at `core/build/reports/tests/test/index.html`.*
 
 **Generate Javadoc Documentation**
 
@@ -177,7 +204,11 @@ To generate the full HTML documentation for the project structure:
 **Bash**
 
 ```
+# On Linux/Mac:
 ./gradlew javadoc
+
+# On Windows:
+gradlew.bat javadoc
 ```
 
 *The output will be available at `core/build/docs/javadoc/index.html`.*
@@ -190,9 +221,13 @@ During the development of the project, the team faced several technical and soft
 * **Procedural Snake Rendering:** Calculating the correct sprite angle for the snake's corners and tail based on the `x,y` differences of adjacent `SnakeBody` nodes was mathematically challenging. We implemented a relative direction check in `SnakeRenderer` to solve this.
 * **JSON Serialization Refactoring:** When transitioning our codebase to English, renaming Java variables (e.g., `nome` to `name`) broke the existing `ranking.json` save files, throwing `SerializationException`. We learned to clear obsolete saves and handle `Unchecked Warnings` with the `@SuppressWarnings` annotation during generic deserialization.
 * **State Management:** Passing input control cleanly between the Gameplay and Pause screens required careful reference management in `KeyboardController` to resume the exact same match instance instead of creating a new one.
+* **Asset Lifecycle Management:** An early version of `GameOver` instantiated `GameAssets` inside `render()`, reloading all ten textures every frame. This was identified as a memory leak and corrected by moving asset loading to the constructor and disposal to `dispose()`.
+* **MVC Audio Coupling:** An earlier version called `SoundManager.getInstance().playMove()` directly inside `Snake.setDirection()`, coupling the domain class to the audio framework. This was resolved by moving the audio call to `KeyboardController.changeDirection()`, keeping `Snake` as pure Java with no LibGDX dependencies.
 
 ## 8. Comments
 
 The adoption of a strict Model-View-Controller (MVC) logic separation significantly improved the scalability of the project. By isolating the math and arrays inside `Snake.java` and keeping textures inside `GameAssets.java` and `SnakeRenderer.java`, writing Unit Tests became straightforward and completely independent of the LibGDX framework constraints.
+
+The introduction of `GameConfig` as a central constants class eliminated all magic numbers from the codebase, making grid and screen dimensions trivially adjustable and consistent across all classes.
 
 Furthermore, full Javadoc commenting was implemented across all classes, adhering to industry standards for software documentation and improving team collaboration.
