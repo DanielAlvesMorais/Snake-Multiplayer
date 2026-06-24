@@ -9,19 +9,20 @@ import com.badlogic.gdx.utils.ScreenUtils;
 
 /**
  * The main menu screen presented when the game is launched.
- * Provides navigation to start a new game or view the local ranking.
+ * Provides navigation to start a new game, view the local ranking, or read
+ * the instructions.
  *
- * @author Davi N. P.
  * @author Daniel A. M.
+ * @author Davi N. P.
  * @author Gustavo S. L.
  * @version 1.0
  */
 public class Menu extends ScreenAdapter {
 
-    private SnakeGame game;
-    private BitmapFont font;
-    private KeyboardController controller;
-    private GlyphLayout layout;
+    private final SnakeGame game;
+    private final BitmapFont font;
+    private final KeyboardController controller;
+    private final GlyphLayout layout;
 
     /**
      * Initializes the Menu interface and assigns the keyboard input processor.
@@ -30,7 +31,6 @@ public class Menu extends ScreenAdapter {
      */
     public Menu(SnakeGame game) {
         this.game = game;
-
         this.controller = new KeyboardController(this);
         this.font = new BitmapFont();
         this.layout = new GlyphLayout();
@@ -48,51 +48,52 @@ public class Menu extends ScreenAdapter {
         font.setColor(Color.WHITE);
         font.getData().setScale(2f);
         layout.setText(font, "SNAKE MULTIPLAYER");
+        font.draw(game.getBatch(), "SNAKE MULTIPLAYER",
+                (screenWidth - layout.width) / 2, 380);
 
-        float titleX = (screenWidth - layout.width) / 2;
-        font.draw(game.getBatch(), "SNAKE MULTIPLAYER", titleX, 350);
-
-        font.setColor(Color.LIGHT_GRAY);
         font.getData().setScale(1.2f);
-        layout.setText(font, "Pressione Enter para Jogar");
 
-        float subtitleX = (screenWidth - layout.width) / 2;
-        font.draw(game.getBatch(), "Pressione Enter para Jogar", subtitleX, 250);
-
-        font.setColor(Color.LIGHT_GRAY);
-        font.getData().setScale(1.2f);
-        layout.setText(font, "Pressione Esc para pausar"); 
-
-        float pauseX = (screenWidth - layout.width) / 2;
-        font.draw(game.getBatch(), "Pressione Esc para pausar", pauseX, 150);
-
-        font.setColor(Color.LIGHT_GRAY);
-        font.getData().setScale(1.2f);
-        layout.setText(font, "Pressione Esc para acessar o ranking");
-
-        float rankX = (screenWidth - layout.width) / 2;
-        font.draw(game.getBatch(), "Pressione R para acessar o ranking", rankX, 180);
+        drawCenteredOption(Color.LIGHT_GRAY, "Press ENTER to Play",   300, screenWidth);
+        drawCenteredOption(Color.LIGHT_GRAY, "Press I for Instructions", 250, screenWidth);
+        drawCenteredOption(Color.LIGHT_GRAY, "Press R to view Ranking",  200, screenWidth);
+        drawCenteredOption(Color.LIGHT_GRAY, "Press ESC to Pause (in-game)", 150, screenWidth);
 
         game.getBatch().end();
-    }               
-             
+    }
+
     /**
-     * Dispatches a screen change to start a new GameScreen session.
+     * Draws a single menu option string centred on the screen at the given Y position.
+     *
+     * @param color       Text colour.
+     * @param text        The string to display.
+     * @param y           Vertical position in screen coordinates.
+     * @param screenWidth Total screen width used for centring.
+     */
+    private void drawCenteredOption(Color color, String text, float y, float screenWidth) {
+        font.setColor(color);
+        layout.setText(font, text);
+        font.draw(game.getBatch(), text, (screenWidth - layout.width) / 2, y);
+    }
+
+    /**
+     * Dispatches a screen change to start a new {@link GameScreen} session.
      */
     public void enterGame() {
         game.setScreen(new GameScreen(game));
     }
 
     /**
-     * Dispatches a screen change to open the RankScreen.
+     * Dispatches a screen change to open the {@link RankScreen}.
      */
     public void enterRanking() {
         game.setScreen(new RankScreen(game));
     }
 
-    @Override
-    public void dispose() {
-        font.dispose();
+    /**
+     * Dispatches a screen change to open the {@link InstructionsScreen}.
+     */
+    public void enterInstructions() {
+        game.setScreen(new InstructionsScreen(game));
     }
 
     /**
@@ -100,5 +101,10 @@ public class Menu extends ScreenAdapter {
      */
     public void returnToMenu() {
         game.setScreen(new Menu(game));
+    }
+
+    @Override
+    public void dispose() {
+        font.dispose();
     }
 }

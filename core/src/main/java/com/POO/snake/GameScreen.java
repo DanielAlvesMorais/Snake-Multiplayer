@@ -5,11 +5,11 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 /**
- * The main gameplay screen responsible for driving the game loop, 
+ * The main gameplay screen responsible for driving the game loop,
  * updating snake positions, handling collisions, and coordinating rendering.
  *
- * @author Davi N. P.
  * @author Daniel A. M.
+ * @author Davi N. P.
  * @author Gustavo S. L.
  * @version 1.0
  */
@@ -30,7 +30,7 @@ public class GameScreen implements Screen {
     private float moveTimer_snake2 = 0;
     private float moveInterval_snake1 = 0.15f;
     private float moveInterval_snake2 = 0.15f;
-    private static final float MIN_INTERVAL = 0.025f;
+    private static final float MIN_INTERVAL   = 0.025f;
     private static final float SPEED_INCREASE = 0.01f;
 
     private float gameTime = 0f;
@@ -43,14 +43,12 @@ public class GameScreen implements Screen {
     public GameScreen(final SnakeGame game) {
         this.game = game;
 
-        this.assets = new GameAssets();
+        this.assets       = new GameAssets();
         this.snakeRenderer = new SnakeRenderer(game.getBatch());
-        this.hudRenderer = new HudRenderer(game);
+        this.hudRenderer  = new HudRenderer(game);
 
         this.snake1 = new Snake(280, 240);
         this.snake2 = new Snake(360, 240);
-        this.moveInterval_snake1 = 0.15f;
-        this.moveInterval_snake2 = 0.15f;
 
         this.controller = new KeyboardController(this, snake1, snake2);
 
@@ -63,29 +61,20 @@ public class GameScreen implements Screen {
     /**
      * Determines the winner of the match based on collision states and scores.
      *
-     * @return A string representing the result ("P1", "P2", or "Empate").
+     * @return A string representing the result ({@code "P1"}, {@code "P2"},
+     *         or {@code "Tie"}).
      */
     private String determineWinner() {
         boolean snake1Collided = snake1.checkCollision(snake2);
         boolean snake2Collided = snake2.checkCollision(snake1);
 
         if (snake1Collided && snake2Collided) {
-            if (snake1.getScore() > snake2.getScore()) {
-                return "P1";
-            }
-            if (snake2.getScore() > snake1.getScore()) {
-                return "P2";
-            }
+            if (snake1.getScore() > snake2.getScore()) return "P1";
+            if (snake2.getScore() > snake1.getScore()) return "P2";
             return "Empate";
         }
-
-        if (snake1Collided) {
-            return "P2";
-        }
-        if (snake2Collided) {
-            return "P1";
-        }
-
+        if (snake1Collided) return "P2";
+        if (snake2Collided) return "P1";
         return "Empate";
     }
 
@@ -106,13 +95,14 @@ public class GameScreen implements Screen {
             moveTimer_snake2 = 0;
         }
 
-        float alpha = Math.min(moveTimer_snake1 / moveInterval_snake1, 1.0f);
+        // Alpha: fraction of the current movement interval elapsed (for smooth rendering).
+        float alpha1 = Math.min(moveTimer_snake1 / moveInterval_snake1, 1.0f);
         float alpha2 = Math.min(moveTimer_snake2 / moveInterval_snake2, 1.0f);
 
-        if(checkAppleCollision(snake1)) {
+        if (checkAppleCollision(snake1)) {
             moveInterval_snake1 = Math.max(MIN_INTERVAL, moveInterval_snake1 - SPEED_INCREASE);
         }
-        if(checkAppleCollision(snake2)) {
+        if (checkAppleCollision(snake2)) {
             moveInterval_snake2 = Math.max(MIN_INTERVAL, moveInterval_snake2 - SPEED_INCREASE);
         }
 
@@ -121,18 +111,25 @@ public class GameScreen implements Screen {
             return;
         }
 
-        game.getBatch().begin(); 
+        game.getBatch().begin();
 
         if (assets.backgroundTexture != null) {
-            game.getBatch().draw(assets.backgroundTexture, 0, 0, 640, 480);
+            game.getBatch().draw(assets.backgroundTexture, 0, 0,
+                    GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
         }
 
-        game.getBatch().draw(assets.appleTexture, apple.getX(), apple.getY(), 20, 20);
+        game.getBatch().draw(assets.appleTexture,
+                apple.getX(), apple.getY(),
+                GameConfig.TILE_SIZE, GameConfig.TILE_SIZE);
 
-        snakeRenderer.draw(snake1, assets.snake1HeadTexture, assets.snake1BodyTexture, assets.snake1TailTexture, assets.snake1CornerTexture, alpha);
-        snakeRenderer.draw(snake2, assets.snake2HeadTexture, assets.snake2BodyTexture, assets.snake2TailTexture, assets.snake2CornerTexture, alpha2); // Used alpha2 for snake2
+        snakeRenderer.draw(snake1,
+                assets.snake1HeadTexture, assets.snake1BodyTexture,
+                assets.snake1TailTexture, assets.snake1CornerTexture, alpha1);
+        snakeRenderer.draw(snake2,
+                assets.snake2HeadTexture, assets.snake2BodyTexture,
+                assets.snake2TailTexture, assets.snake2CornerTexture, alpha2);
 
-        game.getBatch().end(); 
+        game.getBatch().end();
 
         hudRenderer.draw(assets, snake1.getScore(), snake2.getScore(), gameTime);
     }
@@ -141,7 +138,7 @@ public class GameScreen implements Screen {
      * Checks whether the given snake's head intersects with the apple's coordinates.
      *
      * @param snake The snake to test for collision.
-     * @return True if a collision occurred, false otherwise.
+     * @return {@code true} if a collision occurred, {@code false} otherwise.
      */
     private boolean checkAppleCollision(Snake snake) {
         SnakeBody head = snake.getBody().peekFirst();
@@ -155,7 +152,8 @@ public class GameScreen implements Screen {
     }
 
     /**
-     * Generates a new random position for the apple, ensuring it does not spawn inside any snake body.
+     * Generates a new random position for the apple, ensuring it does not spawn
+     * inside any snake body.
      */
     private void repositionApple() {
         boolean validPosition = false;
@@ -169,9 +167,7 @@ public class GameScreen implements Screen {
                     break;
                 }
             }
-            if (!validPosition) {
-                continue;
-            }
+            if (!validPosition) continue;
 
             for (SnakeBody piece : snake2.getBody()) {
                 if (apple.getX() == piece.getX() && apple.getY() == piece.getY()) {
@@ -183,39 +179,35 @@ public class GameScreen implements Screen {
     }
 
     /**
-     * Triggers the end of the match logic, pausing gameplay and advancing to the Game Over screen.
+     * Triggers the end of the match: determines the winner, plays the collision sound,
+     * disposes this screen's resources, and transitions to {@link GameOver}.
      */
     private void endMatch() {
         String winner = determineWinner();
         SoundManager.getInstance().playCollision();
+
         int score;
         switch (winner) {
-            case "P1":
-                score = snake1.getScore();
-                break;
-            case "P2":
-                score = snake2.getScore();
-                break;
-            case "Empate":
-                score = Math.max(snake1.getScore(), snake2.getScore());
-                break;
-            default:
-                score = 0;
+            case "P1":  score = snake1.getScore(); break;
+            case "P2":  score = snake2.getScore(); break;
+            default:    score = Math.max(snake1.getScore(), snake2.getScore()); break;
         }
 
-        game.setScreen(new GameOver(game, winner, score, assets.snake1HeadTexture, assets.snake2HeadTexture));
+        game.setScreen(new GameOver(game, winner, score));
+        // Explicitly dispose this screen's resources now that we've switched away.
+        dispose();
     }
 
-    @Override public void show() {}
+    @Override public void show()   {}
     @Override public void resize(int width, int height) {}
-    @Override public void pause() {}
+    @Override public void pause()  {}
     @Override public void resume() {}
-    @Override public void hide() {}
+    @Override public void hide()   {}
 
     /**
      * Retrieves the keyboard controller currently attached to this game screen.
      *
-     * @return The active KeyboardController.
+     * @return The active {@link KeyboardController}.
      */
     public KeyboardController getController() {
         return this.controller;

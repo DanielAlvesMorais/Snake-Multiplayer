@@ -45,12 +45,10 @@ public class GameOver extends ScreenAdapter {
      * @param headP1     Texture of player 1's head for display.
      * @param headP2     Texture of player 2's head for display.
      */
-    public GameOver(SnakeGame game, String winner, int finalScore, Texture headP1, Texture headP2) {
+    public GameOver(SnakeGame game, String winner, int finalScore) {
         this.game = game;
         this.winner = winner;
         this.finalScore = finalScore;
-        this.headP1 = headP1;
-        this.headP2 = headP2;
         this.font = new BitmapFont();
         this.layout = new GlyphLayout();
 
@@ -64,6 +62,7 @@ public class GameOver extends ScreenAdapter {
     public void render(float delta) {
         ScreenUtils.clear(0f, 0.2f, 0f, 1);
         float screenWidth = Gdx.graphics.getWidth();
+        GameAssets assets = new GameAssets();
 
         game.getBatch().begin();
 
@@ -71,12 +70,12 @@ public class GameOver extends ScreenAdapter {
         if (winner.equals("Empate")) {
             font.setColor(Color.YELLOW);
             drawCenteredText("EMPATE!", 400, screenWidth);
-            game.getBatch().draw(headP1, (screenWidth / 2) - 100, 280, SPRITE_SIZE, SPRITE_SIZE);
-            game.getBatch().draw(headP2, (screenWidth / 2) + 20, 280, SPRITE_SIZE, SPRITE_SIZE);
+            game.getBatch().draw(assets.snake1HeadTexture, (screenWidth / 2) - 100, 280, SPRITE_SIZE, SPRITE_SIZE);
+            game.getBatch().draw(assets.snake2HeadTexture, (screenWidth / 2) + 20, 280, SPRITE_SIZE, SPRITE_SIZE);
         } else {
             font.setColor(Color.GREEN);
             drawCenteredText(winner + " VENCEU!", 400, screenWidth);
-            Texture winnerHead = winner.equals("P1") ? headP1 : headP2;
+            Texture winnerHead = winner.equals("P1") ? assets.snake1HeadTexture : assets.snake2HeadTexture;
             game.getBatch().draw(winnerHead, (screenWidth - SPRITE_SIZE) / 2, 280, SPRITE_SIZE, SPRITE_SIZE);
         }
 

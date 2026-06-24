@@ -4,10 +4,11 @@ import java.util.Random;
 
 /**
  * Represents the apple that the snakes consume to grow in size and increase their score.
- * Handles its own random grid-based positioning logic.
+ * Handles its own random grid-based positioning logic using the global
+ * {@link GameConfig} constants to guarantee alignment and in-bounds placement.
  *
- * @author Davi N. P.
  * @author Daniel A. M.
+ * @author Davi N. P.
  * @author Gustavo S. L.
  * @version 1.0
  */
@@ -17,12 +18,13 @@ public class Apple {
     private int y;
 
     /**
-     * Instantiates an Apple and assigns it a random coordinate within the game grid boundaries.
+     * Instantiates an Apple and assigns it a random coordinate within the game
+     * grid boundaries, aligned to the tile grid.
      */
     public Apple() {
         Random random = new Random();
-        this.x = random.nextInt(32) * 20;
-        this.y = random.nextInt(22) * 20; // 22 cells × 20px = 440px max
+        this.x = random.nextInt(GameConfig.GRID_COLS) * GameConfig.TILE_SIZE;
+        this.y = random.nextInt(GameConfig.GRID_ROWS) * GameConfig.TILE_SIZE;
     }
 
     /**

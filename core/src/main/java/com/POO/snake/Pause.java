@@ -9,20 +9,21 @@ import com.badlogic.gdx.utils.ScreenUtils;
 
 /**
  * The pause overlay screen displayed when gameplay is temporarily suspended.
- * Preserves the previous game state and allows players to resume or exit the application.
+ * Preserves the previous game state and allows players to resume or exit
+ * the application.
  *
- * @author Davi N. P.
  * @author Daniel A. M.
+ * @author Davi N. P.
  * @author Gustavo S. L.
  * @version 1.0
  */
 public class Pause extends ScreenAdapter {
 
-    private SnakeGame game;
-    private GameScreen gameScreen; 
-    private BitmapFont font;
-    private GlyphLayout layout;
-    private KeyboardController controller;
+    private final SnakeGame game;
+    private final GameScreen gameScreen;
+    private final BitmapFont font;
+    private final GlyphLayout layout;
+    private final KeyboardController controller;
 
     /**
      * Initializes the Pause screen overlay.
@@ -31,10 +32,10 @@ public class Pause extends ScreenAdapter {
      * @param gameScreen The active gameplay instance that was put on hold.
      */
     public Pause(SnakeGame game, GameScreen gameScreen) {
-        this.game = game;
+        this.game       = game;
         this.gameScreen = gameScreen;
-        this.font = new BitmapFont();
-        this.layout = new GlyphLayout();
+        this.font       = new BitmapFont();
+        this.layout     = new GlyphLayout();
 
         this.controller = new KeyboardController(this);
         Gdx.input.setInputProcessor(controller);
@@ -49,17 +50,20 @@ public class Pause extends ScreenAdapter {
 
         font.setColor(Color.ORANGE);
         font.getData().setScale(3f);
-        layout.setText(font, "PAUSE");
-        font.draw(game.getBatch(), "PAUSE", (screenWidth - layout.width) / 2, 400);
+        layout.setText(font, "PAUSED");
+        font.draw(game.getBatch(), "PAUSED",
+                (screenWidth - layout.width) / 2, 400);
 
         font.setColor(Color.WHITE);
         font.getData().setScale(1.2f);
-        layout.setText(font, "Press ENTER to Continue");
-        font.draw(game.getBatch(), "Press ENTER to Continue", (screenWidth - layout.width) / 2, 250);
+        layout.setText(font, "Press ENTER to Resume");
+        font.draw(game.getBatch(), "Press ENTER to Resume",
+                (screenWidth - layout.width) / 2, 250);
 
         font.setColor(Color.LIGHT_GRAY);
-        layout.setText(font, "Press ESC to Close");
-        font.draw(game.getBatch(), "Press ESC to Close", (screenWidth - layout.width) / 2, 200);
+        layout.setText(font, "Press ESC to Close Game");
+        font.draw(game.getBatch(), "Press ESC to Close Game",
+                (screenWidth - layout.width) / 2, 200);
 
         game.getBatch().end();
     }

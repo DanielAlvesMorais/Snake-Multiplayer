@@ -6,10 +6,16 @@ import com.badlogic.gdx.InputAdapter;
 
 /**
  * Centralized input handler that processes keyboard events.
- * It maps user keystrokes to the appropriate game actions depending on the active screen context.
+ * It maps user keystrokes to the appropriate game actions depending on the active
+ * screen context.
+ * <p>
+ * Audio feedback for direction changes is triggered here rather than inside
+ * {@link Snake#setDirection(Direction)}, keeping {@code Snake} free of audio
+ * dependencies and preserving the MVC separation.
+ * </p>
  *
- * @author Davi N. P.
  * @author Daniel A. M.
+ * @author Davi N. P.
  * @author Gustavo S. L.
  * @version 1.0
  */
@@ -17,7 +23,7 @@ public class KeyboardController extends InputAdapter {
 
     private Snake snake1;
     private Snake snake2;
-    private GameScreen gameScreen; 
+    private GameScreen gameScreen;
 
     private Menu menuScreen;
     private Pause pauseScreen;
@@ -25,7 +31,8 @@ public class KeyboardController extends InputAdapter {
     private RankScreen rankScreen;
 
     /**
-     * Constructor specifically for the in-game state, tracking player movements and pause actions.
+     * Constructor specifically for the in-game state, tracking player movements
+     * and pause actions.
      *
      * @param gameScreen The active gameplay screen.
      * @param snake1     Reference to the first snake entity.
@@ -39,30 +46,43 @@ public class KeyboardController extends InputAdapter {
 
     /**
      * Constructor for routing Menu screen inputs.
+     *
      * @param menuScreen The active menu screen.
      */
-    public KeyboardController(Menu menuScreen) { this.menuScreen = menuScreen; }
+    public KeyboardController(Menu menuScreen) {
+        this.menuScreen = menuScreen;
+    }
 
     /**
      * Constructor for routing Pause screen inputs.
+     *
      * @param pauseScreen The active pause overlay screen.
      */
-    public KeyboardController(Pause pauseScreen) { this.pauseScreen = pauseScreen; }
+    public KeyboardController(Pause pauseScreen) {
+        this.pauseScreen = pauseScreen;
+    }
 
     /**
      * Constructor for routing Game Over screen inputs (including initial inputs).
+     *
      * @param gameOverScreen The active game over screen.
      */
-    public KeyboardController(GameOver gameOverScreen) { this.gameOverScreen = gameOverScreen; }
+    public KeyboardController(GameOver gameOverScreen) {
+        this.gameOverScreen = gameOverScreen;
+    }
 
     /**
      * Constructor for routing Ranking screen inputs.
+     *
      * @param rankScreen The active ranking screen.
      */
-    public KeyboardController(RankScreen rankScreen) { this.rankScreen = rankScreen; }
+    public KeyboardController(RankScreen rankScreen) {
+        this.rankScreen = rankScreen;
+    }
 
     @Override
     public boolean keyDown(int keycode) {
+
         // --- IN-GAME CONTROLS ---
         if (snake1 != null && snake2 != null && gameScreen != null) {
             switch (keycode) {
@@ -70,28 +90,28 @@ public class KeyboardController extends InputAdapter {
                     gameScreen.game.setScreen(new Pause(gameScreen.game, gameScreen));
                     return true;
                 case Keys.UP:
-                    snake1.setDirection(Direction.UP);
+                    changeDirection(snake1, Direction.UP);
                     return true;
                 case Keys.DOWN:
-                    snake1.setDirection(Direction.DOWN);
+                    changeDirection(snake1, Direction.DOWN);
                     return true;
                 case Keys.LEFT:
-                    snake1.setDirection(Direction.LEFT);
+                    changeDirection(snake1, Direction.LEFT);
                     return true;
                 case Keys.RIGHT:
-                    snake1.setDirection(Direction.RIGHT);
+                    changeDirection(snake1, Direction.RIGHT);
                     return true;
                 case Keys.W:
-                    snake2.setDirection(Direction.UP);
+                    changeDirection(snake2, Direction.UP);
                     return true;
                 case Keys.S:
-                    snake2.setDirection(Direction.DOWN);
+                    changeDirection(snake2, Direction.DOWN);
                     return true;
                 case Keys.A:
-                    snake2.setDirection(Direction.LEFT);
+                    changeDirection(snake2, Direction.LEFT);
                     return true;
                 case Keys.D:
-                    snake2.setDirection(Direction.RIGHT);
+                    changeDirection(snake2, Direction.RIGHT);
                     return true;
                 default:
                     return false;
@@ -106,6 +126,9 @@ public class KeyboardController extends InputAdapter {
                     return true;
                 case Keys.R:
                     menuScreen.enterRanking();
+                    return true;
+                case Keys.I:
+                    menuScreen.enterInstructions();
                     return true;
                 default:
                     return false;
@@ -179,5 +202,20 @@ public class KeyboardController extends InputAdapter {
             }
         }
         return false;
+    }
+
+    /**
+     * Delegates a direction change to the given snake and plays the move sound effect.
+     * Centralising audio here keeps {@link Snake} free of audio dependencies.
+     *
+     * @param snake     The snake whose direction should be updated.
+     * @param direction The new desired direction.
+     */
+    private void changeDirection(Snake snake, Direction direction) {
+        Direction before = snake.getDirection();
+        snake.setDirection(direction);
+        if (before != snake.getDirection()) {
+            SoundManager.getInstance().playMove();
+        }
     }
 }

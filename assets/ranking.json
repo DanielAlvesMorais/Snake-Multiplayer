@@ -1,8 +1,23 @@
 [
 {
 	class: com.POO.snake.PlayerScore
+	name: DAN
+	points: 99
+}
+{
+	class: com.POO.snake.PlayerScore
 	name: DDG
 	points: 11
+}
+{
+	class: com.POO.snake.PlayerScore
+	name: DAN
+	points: 10
+}
+{
+	class: com.POO.snake.PlayerScore
+	name: DAN
+	points: 6
 }
 {
 	class: com.POO.snake.PlayerScore
