@@ -11,8 +11,6 @@ out/
 # =========================
 *.class
 *.log
-*.jar
-!grale/wrapper/gradle-wrapper.jar
 *.war
 
 # =========================
